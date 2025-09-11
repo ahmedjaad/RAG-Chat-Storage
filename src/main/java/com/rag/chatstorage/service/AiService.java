@@ -10,11 +10,17 @@ public class AiService {
 
     public static class AiFriendlyException extends RuntimeException {
         private final String code;
+        private final String hint;
         public AiFriendlyException(String code, String message) {
+            this(code, message, null);
+        }
+        public AiFriendlyException(String code, String message, String hint) {
             super(message);
             this.code = code;
+            this.hint = hint;
         }
         public String getCode() { return code; }
+        public String getHint() { return hint; }
     }
 
     private final ChatClient chatClient;
@@ -39,7 +45,8 @@ public class AiService {
             return prompt.user(user).call().content();
         } catch (Exception e) {
             String msg = normalizeMessage(e);
-            throw new AiFriendlyException("AI_UNAVAILABLE", msg);
+            String hint = extractHint(e);
+            throw new AiFriendlyException("AI_UNAVAILABLE", msg, hint);
         }
     }
 
@@ -58,5 +65,23 @@ public class AiService {
         }
         // Default friendly message
         return "The assistant couldn’t respond right now. Please try again.";
+    }
+
+    private String extractHint(Exception e) {
+        String m = e.getMessage();
+        if (m == null) return null;
+        String lower = m.toLowerCase();
+        // Extract simple status code hints if present
+        if (lower.contains("429")) return "(429 rate limit)";
+        if (lower.contains("401")) return "(401 unauthorized)";
+        if (lower.contains("403")) return "(403 forbidden)";
+        if (lower.contains("500")) return "(500 server error)";
+        if (lower.contains("502")) return "(502 bad gateway)";
+        if (lower.contains("503")) return "(503 unavailable)";
+        if (lower.contains("timeout") || lower.contains("timed out")) return "(timeout)";
+        if (lower.contains("connect") || lower.contains("connection")) return "(connection issue)";
+        if (lower.contains("rate") && lower.contains("limit")) return "(rate limit)";
+        if (lower.contains("invalid api key")) return "(invalid api key)";
+        return null;
     }
 }

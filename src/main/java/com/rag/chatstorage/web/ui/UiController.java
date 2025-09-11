@@ -102,6 +102,9 @@ public class UiController {
                 ra.addFlashAttribute("uiAiIssue", true);
                 ra.addFlashAttribute("uiAiMsg", afe.getMessage());
                 ra.addFlashAttribute("uiAiCode", afe.getCode());
+                if (afe.getHint() != null && !afe.getHint().isBlank()) {
+                    ra.addFlashAttribute("uiAiHint", afe.getHint());
+                }
             } catch (Exception e) {
                 ra.addFlashAttribute("uiAiIssue", true);
                 ra.addFlashAttribute("uiAiMsg", "The assistant couldn’t respond right now. Please try again.");

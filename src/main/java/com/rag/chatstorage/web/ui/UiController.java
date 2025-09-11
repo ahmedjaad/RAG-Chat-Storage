@@ -18,9 +18,11 @@ import java.util.stream.Collectors;
 public class UiController {
 
     private final ChatSessionService service;
+    private final com.rag.chatstorage.service.AiService aiService;
 
-    public UiController(ChatSessionService service) {
+    public UiController(ChatSessionService service, com.rag.chatstorage.service.AiService aiService) {
         this.service = service;
+        this.aiService = aiService;
     }
 
     @GetMapping
@@ -80,8 +82,20 @@ public class UiController {
     public String postMessage(@PathVariable Long id, @RequestParam String userId,
                               @RequestParam("sender") com.rag.chatstorage.domain.ChatMessage.Sender sender,
                               @RequestParam("content") String content,
-                              @RequestParam(value = "context", required = false) String context) {
+                              @RequestParam(value = "context", required = false) String context,
+                              org.springframework.web.servlet.mvc.support.RedirectAttributes ra) {
+        // Save user message first
         service.addMessage(id, sender, content, context);
+        // If the sender is USER, try to get an assistant reply via Spring AI
+        if (sender == com.rag.chatstorage.domain.ChatMessage.Sender.USER) {
+            try {
+                String system = "You are a helpful AI assistant."; // simple default system prompt
+                String reply = aiService.infer(system, content);
+                service.addMessage(id, com.rag.chatstorage.domain.ChatMessage.Sender.ASSISTANT, reply, null);
+            } catch (Exception e) {
+                ra.addFlashAttribute("uiError", "AI reply failed: " + e.getMessage());
+            }
+        }
         return "redirect:/ui/sessions/" + id + "?userId=" + userId;
     }
 

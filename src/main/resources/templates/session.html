@@ -34,6 +34,9 @@
     </aside>
     <main class="main">
         <div class="topbar">
+            <div th:if="${uiError}" style="position:absolute;left:16px;right:16px;top:60px;background:#2a1320;border:1px solid #a42534;color:#ffd2d2;padding:8px 12px;border-radius:8px;z-index:3">
+                <strong>AI Error:</strong> <span th:text="${uiError}">Something went wrong</span>
+            </div>
             <div class="title">Session <span th:text="${sessionId}"></span></div>
             <div class="utilities">
                 <a href="/docs" class="btn secondary">Docs</a>

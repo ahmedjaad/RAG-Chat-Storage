@@ -1,0 +1,42 @@
+### Environment
+@host = {{HOST}}
+@apiKey = {{API_KEY}}
+@userId = demo
+@title = My first chat
+@sessionId = {{SESSION_ID}}
+
+### Create session
+POST {{host}}/api/v1/sessions
+X-API-KEY: {{apiKey}}
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "title": "{{title}}"
+}
+
+### List sessions for user
+GET {{host}}/api/v1/sessions?userId={{userId}}
+X-API-KEY: {{apiKey}}
+
+### Rename a session
+PATCH {{host}}/api/v1/sessions/{{sessionId}}/title
+X-API-KEY: {{apiKey}}
+Content-Type: application/json
+
+{
+  "title": "Renamed session"
+}
+
+### Mark favorite
+PATCH {{host}}/api/v1/sessions/{{sessionId}}/favorite
+X-API-KEY: {{apiKey}}
+Content-Type: application/json
+
+{
+  "favorite": true
+}
+
+### Delete session
+DELETE {{host}}/api/v1/sessions/{{sessionId}}
+X-API-KEY: {{apiKey}}

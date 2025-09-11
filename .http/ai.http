@@ -1,0 +1,25 @@
+### Environment
+@host = {{HOST}}
+@apiKey = {{API_KEY}}
+
+### AI Inference
+POST {{host}}/api/v1/ai/infer
+X-API-KEY: {{apiKey}}
+Content-Type: application/json
+
+{
+  "prompt": "Say hello in one sentence.",
+  "system": "You are a helpful assistant."
+}
+
+### Embeddings
+POST {{host}}/api/v1/ai/embeddings
+X-API-KEY: {{apiKey}}
+Content-Type: application/json
+
+{
+  "inputs": [
+    "The quick brown fox jumps over the lazy dog.",
+    "RAG Chat Storage project."
+  ]
+}

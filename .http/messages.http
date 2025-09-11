@@ -1,0 +1,19 @@
+### Environment
+@host = {{HOST}}
+@apiKey = {{API_KEY}}
+@sessionId = {{SESSION_ID}}
+
+### Add message to a session
+POST {{host}}/api/v1/sessions/{{sessionId}}/messages
+X-API-KEY: {{apiKey}}
+Content-Type: application/json
+
+{
+  "sender": "USER",
+  "content": "Hello world",
+  "context": "optional context"
+}
+
+### Get messages (paginated)
+GET {{host}}/api/v1/sessions/{{sessionId}}/messages?page=0&size=20
+X-API-KEY: {{apiKey}}

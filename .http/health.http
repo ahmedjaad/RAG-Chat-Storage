@@ -1,0 +1,18 @@
+### Environment
+@host = {{HOST}}
+@apiKey = {{API_KEY}}
+
+### Root greeting (public)
+GET {{host}}/
+
+### Actuator Health (public)
+GET {{host}}/actuator/health
+
+### Liveness (public)
+GET {{host}}/actuator/health/liveness
+
+### Readiness (public)
+GET {{host}}/actuator/health/readiness
+
+### Swagger redirect (public)
+GET {{host}}/docs

@@ -45,3 +45,18 @@ surefire-reports/
 *.local
 *.swp
 *.swo
+
+# Local development and editor files
+.target/
+
+# Build outputs
+
+# Environment files
+.env.local
+
+# Docker artifacts
+**/.docker/
+
+# Ignore Junie guidelines and tooling
+.junie/
+.junie/guidelines.md

@@ -19,10 +19,13 @@ public class UiController {
 
     private final ChatSessionService service;
     private final com.rag.chatstorage.service.AiService aiService;
+    private final com.rag.chatstorage.service.UserService userService;
 
-    public UiController(ChatSessionService service, com.rag.chatstorage.service.AiService aiService) {
+    public UiController(ChatSessionService service, com.rag.chatstorage.service.AiService aiService,
+                        com.rag.chatstorage.service.UserService userService) {
         this.service = service;
         this.aiService = aiService;
+        this.userService = userService;
     }
 
     @GetMapping
@@ -37,6 +40,8 @@ public class UiController {
         if (userId == null || userId.isBlank()) {
             userId = "demo"; // default for convenience
         }
+        // Ensure user exists (auto-create if new)
+        userService.ensureUser(userId);
         List<SessionResponse> sessions = service.listSessions(userId, favorite).stream()
                 .map(SessionResponse::from)
                 .collect(Collectors.toList());

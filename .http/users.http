@@ -1,0 +1,17 @@
+### Environment
+@host = {{HOST}}
+@apiKey = {{API_KEY}}
+@userId = demo2
+
+### Create (or ensure) a user
+POST {{host}}/api/v1/users
+X-API-KEY: {{apiKey}}
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}"
+}
+
+### List users
+GET {{host}}/api/v1/users
+X-API-KEY: {{apiKey}}

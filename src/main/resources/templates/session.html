@@ -12,6 +12,10 @@
     <aside class="sidebar">
         <div class="header">
             <div class="brand">RAG Chat Storage</div>
+            <form method="get" th:action="@{/ui/sessions}" style="margin-left:auto;display:flex;gap:6px;align-items:center">
+                <input type="text" name="userId" th:placeholder="${userId}" style="width:140px" />
+                <button class="secondary" type="submit" title="Switch user">Switch</button>
+            </form>
             <span class="badge" th:text="${userId}">user</span>
         </div>
         <div class="new-session">

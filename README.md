@@ -73,6 +73,11 @@ Troubleshooting 401 Unauthorized:
 
 Base path: `/api/v1`
 
+### Users
+- POST `/api/v1/users` – create (or ensure) a user
+  - Body: `{ "userId": "u1" }`
+- GET `/api/v1/users` – list users
+
 ### Sessions
 - POST `/api/v1/sessions` – create session
   - Body: `{ "userId": "u1", "title": "My chat" }`

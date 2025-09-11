@@ -36,28 +36,6 @@ public class SecurityConfig {
     @Value("${rate-limit.burst:20}")
     private int burst;
 
-    @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE)
-    public OncePerRequestFilter corsFilter(
-            @Value("${cors.allowed-origins:*}") String allowedOrigins,
-            @Value("${cors.allowed-methods:GET,POST,PATCH,DELETE,OPTIONS}") String allowedMethods,
-            @Value("${cors.allowed-headers:*}") String allowedHeaders
-    ) {
-        return new OncePerRequestFilter() {
-            @Override
-            protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-                response.setHeader("Access-Control-Allow-Origin", allowedOrigins);
-                response.setHeader("Access-Control-Allow-Methods", allowedMethods);
-                response.setHeader("Access-Control-Allow-Headers", allowedHeaders);
-                response.setHeader("Access-Control-Allow-Credentials", "true");
-                if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-                    response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-                } else {
-                    filterChain.doFilter(request, response);
-                }
-            }
-        };
-    }
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE + 1)
@@ -131,11 +109,17 @@ public class SecurityConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins(allowedOrigins.split(","))
+                String[] origins = allowedOrigins.split(",");
+                boolean wildcard = origins.length == 1 && origins[0].trim().equals("*");
+                var mapping = registry.addMapping("/**")
                         .allowedMethods(allowedMethods.split(","))
-                        .allowedHeaders(allowedHeaders.split(","))
-                        .allowCredentials(true);
+                        .allowedHeaders(allowedHeaders.split(","));
+                if (wildcard) {
+                    // When using wildcard origins, credentials must be disabled per CORS spec
+                    mapping.allowedOriginPatterns("*").allowCredentials(false);
+                } else {
+                    mapping.allowedOrigins(origins).allowCredentials(true);
+                }
             }
         };
     }

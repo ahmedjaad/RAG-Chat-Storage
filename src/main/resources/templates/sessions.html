@@ -3,50 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <title>RAG Chat Storage - Sessions</title>
-    <link rel="stylesheet" href="https://unpkg.com/mvp.css@1.12/mvp.css">
+    <link rel="stylesheet" th:href="@{/css/chat.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
 <body>
-<header>
-    <h1>RAG Chat Storage</h1>
-    <nav>
-        <a href="/docs">API Docs</a>
-    </nav>
-</header>
-<main>
-    <section>
-        <h2 th:text="'Sessions for ' + ${userId}">Sessions</h2>
-        <form method="post" th:action="@{/ui/sessions}">
-            <input type="hidden" name="userId" th:value="${userId}">
-            <input type="text" name="title" placeholder="New session title">
-            <button type="submit">Create Session</button>
-        </form>
-        <table>
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Title</th>
-                <th>Favorite</th>
-                <th>Updated</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="s : ${sessions}">
-                <td th:text="${s.id}"></td>
-                <td th:text="${s.title}"></td>
-                <td th:text="${s.favorite}"></td>
-                <td th:text="${s.updatedAt}"></td>
-                <td>
-                    <a th:href="@{'/ui/sessions/' + ${s.id} + '(?userId=' + ${userId} + ')'}">Open</a>
-                    <form method="post" th:action="@{'/ui/sessions/' + ${s.id} + '/delete'}" style="display:inline">
-                        <input type="hidden" name="userId" th:value="${userId}">
-                        <button type="submit">Delete</button>
-                    </form>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </section>
-</main>
+<div class="app">
+    <aside class="sidebar">
+        <div class="header">
+            <div class="brand">RAG Chat Storage</div>
+            <span class="badge" th:text="${userId}">user</span>
+        </div>
+        <div class="new-session">
+            <form method="post" th:action="@{/ui/sessions}" style="display:flex;gap:8px;width:100%">
+                <input type="hidden" name="userId" th:value="${userId}">
+                <input type="text" name="title" placeholder="New session title" style="flex:1">
+                <button type="submit">New</button>
+            </form>
+        </div>
+        <div class="sessions">
+            <div th:each="s : ${sessions}" class="session-item">
+                <a class="title" th:text="${s.title}" th:href="@{'/ui/sessions/' + ${s.id} + '(?userId=' + ${userId} + ')'}">Session</a>
+                <span class="meta" th:text="${#temporals.format(s.updatedAt, 'MM-dd HH:mm')}">time</span>
+                <form method="post" th:action="@{'/ui/sessions/' + ${s.id} + '/delete'}" data-confirm="Delete session?">
+                    <input type="hidden" name="userId" th:value="${userId}">
+                    <button class="secondary" type="submit" title="Delete">✕</button>
+                </form>
+            </div>
+        </div>
+    </aside>
+    <main class="main">
+        <div class="topbar">
+            <div class="title">Sessions</div>
+            <div class="utilities">
+                <a href="/docs" class="btn secondary">Docs</a>
+            </div>
+        </div>
+        <div class="chat" style="display:flex;align-items:center;justify-content:center;color:var(--muted)">
+            <div>
+                <p>Select a session on the left, or create a new one.</p>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/js/ui.js}"></script>
 </body>
 </html>

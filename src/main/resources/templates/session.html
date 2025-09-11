@@ -2,50 +2,68 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>RAG Chat Storage - Session</title>
-    <link rel="stylesheet" href="https://unpkg.com/mvp.css@1.12/mvp.css">
+    <title>RAG Chat Storage - Chat</title>
+    <link rel="stylesheet" th:href="@{/css/chat.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
 <body>
-<header>
-    <h1>Session <span th:text="${sessionId}"></span></h1>
-    <nav>
-        <a th:href="@{'/ui/sessions(?userId=' + ${userId} + ')'}">Back to Sessions</a>
-        <a href="/docs">API Docs</a>
-    </nav>
-</header>
-<main>
-    <section>
-        <h2>Messages</h2>
-        <article th:each="m : ${messages.items}">
-            <header>
-                <strong th:text="${m.sender}"></strong>
-                <small th:text="${m.createdAt}"></small>
-            </header>
-            <p th:text="${m.content}"></p>
-            <pre th:if="${m.context}" th:text="${m.context}"></pre>
-        </article>
-
-        <form method="post" th:action="@{'/ui/sessions/' + ${sessionId} + '/messages'}">
-            <input type="hidden" name="userId" th:value="${userId}">
-            <label>
-                Sender
-                <select name="sender">
-                    <option>USER</option>
-                    <option>ASSISTANT</option>
-                    <option>SYSTEM</option>
-                </select>
-            </label>
-            <label>
-                Content
-                <textarea name="content" rows="3" required></textarea>
-            </label>
-            <label>
-                Context (optional)
-                <textarea name="context" rows="3"></textarea>
-            </label>
-            <button type="submit">Send</button>
-        </form>
-    </section>
-</main>
+<div class="app">
+    <aside class="sidebar">
+        <div class="header">
+            <div class="brand">RAG Chat Storage</div>
+            <span class="badge" th:text="${userId}">user</span>
+        </div>
+        <div class="new-session">
+            <form method="post" th:action="@{/ui/sessions}" style="display:flex;gap:8px;width:100%">
+                <input type="hidden" name="userId" th:value="${userId}">
+                <input type="text" name="title" placeholder="New session title" style="flex:1">
+                <button type="submit">New</button>
+            </form>
+        </div>
+        <div class="sessions">
+            <div th:each="s : ${sessions}" class="session-item">
+                <a class="title" th:text="${s.title}" th:href="@{'/ui/sessions/' + ${s.id} + '(?userId=' + ${userId} + ')'}">Session</a>
+                <span class="meta" th:text="${#temporals.format(s.updatedAt, 'MM-dd HH:mm')}">time</span>
+                <form method="post" th:action="@{'/ui/sessions/' + ${s.id} + '/delete'}" data-confirm="Delete session?">
+                    <input type="hidden" name="userId" th:value="${userId}">
+                    <button class="secondary" type="submit" title="Delete">✕</button>
+                </form>
+            </div>
+        </div>
+    </aside>
+    <main class="main">
+        <div class="topbar">
+            <div class="title">Session <span th:text="${sessionId}"></span></div>
+            <div class="utilities">
+                <a href="/docs" class="btn secondary">Docs</a>
+            </div>
+        </div>
+        <div class="chat">
+            <div th:each="m : ${messages.items}" th:classappend=" ${m.sender.name().toLowerCase()}" class="msg">
+                <div class="bubble" th:classappend=" ${m.sender.name().toLowerCase()}">
+                    <div class="sender">
+                        <span th:text="${m.sender}">USER</span>
+                        <span class="time" th:text="${#temporals.format(m.createdAt, 'HH:mm')}">00:00</span>
+                    </div>
+                    <div th:text="${m.content}"></div>
+                    <pre class="context" th:if="${m.context}" th:text="${m.context}"></pre>
+                </div>
+            </div>
+        </div>
+        <div class="composer">
+            <div class="wrap">
+                <form method="post" th:action="@{'/ui/sessions/' + ${sessionId} + '/messages'}" style="display:flex;gap:8px;flex:1">
+                    <input type="hidden" name="userId" th:value="${userId}">
+                    <input type="hidden" name="sender" value="USER" />
+                    <textarea name="content" rows="2" placeholder="Message..." required></textarea>
+                    <div class="send">
+                        <button type="submit">Send</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/js/ui.js}"></script>
 </body>
 </html>

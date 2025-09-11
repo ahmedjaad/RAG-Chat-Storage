@@ -50,6 +50,12 @@ public class UiController {
                        @RequestParam(defaultValue = "0") int page,
                        @RequestParam(defaultValue = "20") int size,
                        Model model) {
+        // Load sidebar sessions for ChatGPT-like layout
+        List<SessionResponse> sessions = service.listSessions(userId).stream()
+                .map(SessionResponse::from)
+                .collect(Collectors.toList());
+        model.addAttribute("sessions", sessions);
+
         Page<com.rag.chatstorage.domain.ChatMessage> p = service.getMessages(id, page, size);
         PagedMessages pm = new PagedMessages(
                 p.getContent().stream().map(MessageResponse::from).collect(Collectors.toList()),

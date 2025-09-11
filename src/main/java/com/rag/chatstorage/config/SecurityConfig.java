@@ -36,7 +36,6 @@ public class SecurityConfig {
     @Value("${rate-limit.burst:20}")
     private int burst;
 
-
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE + 1)
     public OncePerRequestFilter apiKeyFilter() {

@@ -94,7 +94,7 @@ A built-in Thymeleaf UI is available at /ui with a ChatGPT-like dark theme:
 - Left sidebar lists sessions with small, friendly controls per session (favorite ⭐/☆, inline rename ✎, delete 🗑), and a filter toggle (All / Favorites)
 - Main chat area shows messages with alternating bubbles
 - Sticky composer at the bottom to send USER messages quickly
-- Now, when you send a message, the server calls OpenAI via Spring AI and posts the assistant reply back into the same session (requires OPENAI_API_KEY set)
+- Now, when you send a message, the server calls OpenAI via Spring AI and posts the assistant reply back into the same session (requires OPENAI_API_KEY set). If the AI is unavailable or misconfigured, the UI shows a subtle notice instead of an error in the chat.
 
 Tip: Open http://localhost:8080/ui to get redirected to a demo user (userId=demo).
 

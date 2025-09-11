@@ -97,8 +97,15 @@ public class UiController {
                 String system = "You are a helpful AI assistant."; // simple default system prompt
                 String reply = aiService.infer(system, content);
                 service.addMessage(id, com.rag.chatstorage.domain.ChatMessage.Sender.ASSISTANT, reply, null);
+            } catch (com.rag.chatstorage.service.AiService.AiFriendlyException afe) {
+                // Set a friendly, non-technical toast message and a short code for optional diagnostics
+                ra.addFlashAttribute("uiAiIssue", true);
+                ra.addFlashAttribute("uiAiMsg", afe.getMessage());
+                ra.addFlashAttribute("uiAiCode", afe.getCode());
             } catch (Exception e) {
-                ra.addFlashAttribute("uiError", "AI reply failed: " + e.getMessage());
+                ra.addFlashAttribute("uiAiIssue", true);
+                ra.addFlashAttribute("uiAiMsg", "The assistant couldn’t respond right now. Please try again.");
+                ra.addFlashAttribute("uiAiCode", "AI_UNAVAILABLE");
             }
         }
         return "redirect:/ui/sessions/" + id + "?userId=" + userId;

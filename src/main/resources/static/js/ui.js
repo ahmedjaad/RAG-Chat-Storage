@@ -39,4 +39,10 @@
       if (form) form.style.display = 'none';
     });
   });
+
+  // Auto-hide AI toast
+  const toast = document.getElementById('ai-toast');
+  if (toast) {
+    setTimeout(()=>{ toast.style.display = 'none'; }, 5000);
+  }
 })();

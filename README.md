@@ -41,13 +41,18 @@ Key variables:
 ```
 docker compose up --build
 ```
-- App: http://localhost:8080
-- Adminer: http://localhost:8081 (System: MySQL, Server: mysql, User: root, Password: secret)
+- App: http://localhost:8080 (container name: rag-app)
+- Adminer: http://localhost:8081 (container name: rag-adminer)
+  - Adminer connection to MySQL:
+    - System: MySQL
+    - Server: mysql (service hostname inside Compose network) or rag-mysql (container name)
+    - User: root
+    - Password: value of MYSQL_ROOT_PASSWORD in your .env (default: secret)
   - If you see "Connection refused" in Adminer:
     - Wait a few seconds; MySQL has a healthcheck and Adminer will start after it’s healthy.
-    - Ensure you connect to Server: mysql (container name), not localhost.
+    - Ensure you connect to Server: mysql (service) or rag-mysql (container), not localhost.
     - Check that host port 3306 isn’t already used by a local MySQL. If in use, edit docker-compose.yml and change the mapping to "3307:3306", then restart.
-    - Password is the value of MYSQL_ROOT_PASSWORD in your .env (default: secret).
+- MySQL (container name: rag-mysql) is available on host port 3306 by default.
 - Health: http://localhost:8080/actuator/health (details enabled)
   - Liveness: http://localhost:8080/actuator/health/liveness
   - Readiness: http://localhost:8080/actuator/health/readiness

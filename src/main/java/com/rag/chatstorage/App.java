@@ -1,4 +1,4 @@
-package northbay;
+package com.rag.chatstorage;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -14,6 +14,6 @@ public class App {
 
     @GetMapping("/")
     public String home() {
-        return "Hello from Northbay!";
+        return "Hello from RAG Chat Storage!";
     }
 }

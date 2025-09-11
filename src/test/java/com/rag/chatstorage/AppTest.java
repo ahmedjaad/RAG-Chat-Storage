@@ -1,4 +1,4 @@
-package northbay;
+package com.rag.chatstorage;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +26,6 @@ class AppTest {
     void homeEndpointReturnsGreeting() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Hello from Northbay!"));
+                .andExpect(content().string("Hello from RAG Chat Storage!"));
     }
 }

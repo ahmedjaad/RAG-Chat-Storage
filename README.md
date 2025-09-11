@@ -47,22 +47,22 @@ Add header `X-API-KEY: <your api key>` to API requests.
 
 ## API
 
-Base path: `/api`
+Base path: `/api/v1`
 
 ### Sessions
-- POST `/api/sessions` – create session
+- POST `/api/v1/sessions` – create session
   - Body: `{ "userId": "u1", "title": "My chat" }`
-- GET `/api/sessions?userId=u1` – list sessions for user
-- PATCH `/api/sessions/{id}/title` – rename session
+- GET `/api/v1/sessions?userId=u1` – list sessions for user
+- PATCH `/api/v1/sessions/{id}/title` – rename session
   - Body: `{ "title": "New title" }`
-- PATCH `/api/sessions/{id}/favorite` – mark/unmark favorite
+- PATCH `/api/v1/sessions/{id}/favorite` – mark/unmark favorite
   - Body: `{ "favorite": true }`
-- DELETE `/api/sessions/{id}` – delete session and messages
+- DELETE `/api/v1/sessions/{id}` – delete session and messages
 
 ### Messages
-- POST `/api/sessions/{id}/messages` – add message
+- POST `/api/v1/sessions/{id}/messages` – add message
   - Body: `{ "sender": "USER|ASSISTANT|SYSTEM", "content": "...", "context": "..." }`
-- GET `/api/sessions/{id}/messages?page=0&size=20` – list messages (paginated)
+- GET `/api/v1/sessions/{id}/messages?page=0&size=20` – list messages (paginated)
 
 ## Development
 

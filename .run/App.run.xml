@@ -13,7 +13,12 @@
       <option name="region" />
       <option name="useCurrentConnection" value="false" />
     </extension>
-    <method v="2">
+        <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+        <option name="VM_PARAMETERS" value="-Dspring.profiles.active=dev" />
+        <envs>
+          <env name="DOTENV_PATH" value=".env" />
+        </envs>
+        <method v="2">
       <option name="Make" enabled="true" />
     </method>
   </configuration>

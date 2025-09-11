@@ -66,8 +66,8 @@ public class SecurityConfig {
             @Override
             protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
                 String path = request.getRequestURI();
-                // Allow health and swagger-ui without API key for convenience (can be changed)
-                if ("/".equals(path) || path.startsWith("/actuator/health") || path.startsWith("/v3/api-docs") || path.startsWith("/swagger-ui")) {
+                // Allow health, docs, swagger-ui, and simple UI without API key for convenience (can be changed)
+                if ("/".equals(path) || path.startsWith("/actuator/health") || path.startsWith("/v3/api-docs") || path.startsWith("/swagger-ui") || path.equals("/docs") || path.startsWith("/ui")) {
                     filterChain.doFilter(request, response);
                     return;
                 }

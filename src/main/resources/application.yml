@@ -17,6 +17,16 @@ server:
   port: ${PORT:8080}
 
 management:
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: db
   endpoints:
     web:
       exposure:

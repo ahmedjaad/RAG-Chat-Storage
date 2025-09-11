@@ -40,7 +40,9 @@ docker compose up --build
 ```
 - App: http://localhost:8080
 - Adminer: http://localhost:8081 (System: MySQL, Server: mysql, User: root, Password: secret)
-- Health: http://localhost:8080/actuator/health
+- Health: http://localhost:8080/actuator/health (details enabled)
+  - Liveness: http://localhost:8080/actuator/health/liveness
+  - Readiness: http://localhost:8080/actuator/health/readiness
 - Swagger UI: http://localhost:8080/swagger-ui/index.html
 
 Add header `X-API-KEY: <your api key>` to API requests.

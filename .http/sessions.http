@@ -41,6 +41,15 @@ Content-Type: application/json
   "favorite": true
 }
 
+### Unmark favorite
+PATCH {{host}}/api/v1/sessions/{{sessionId}}/favorite
+X-API-KEY: {{apiKey}}
+Content-Type: application/json
+
+{
+  "favorite": false
+}
+
 ### Delete session
 DELETE {{host}}/api/v1/sessions/{{sessionId}}
 X-API-KEY: {{apiKey}}

@@ -15,5 +15,7 @@ Content-Type: application/json
 }
 
 ### Get messages (paginated)
-GET {{host}}/api/v1/sessions/{{sessionId}}/messages?page=0&size=20
+@page = 0
+@size = 20
+GET {{host}}/api/v1/sessions/{{sessionId}}/messages?page={{page}}&size={{size}}
 X-API-KEY: {{apiKey}}

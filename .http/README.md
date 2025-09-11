@@ -22,7 +22,7 @@ Files:
 - messages.http – add and list messages for a session
 - ai.http – inference and embeddings endpoints (requires OpenAI env vars configured)
 
-Note: The .http directory contents are git-ignored except for this README and the .keep file.
+Note: The .http directory contents are git-ignored except for this README, the .keep file, and the sample env file http-client.env.json.sample.
 
 401 tips when using these requests:
 - Set @API_KEY at the top of the file or via http-client.env.json. The header name is X-API-KEY by default.

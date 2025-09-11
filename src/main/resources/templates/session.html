@@ -23,7 +23,6 @@
         <div class="sessions">
             <div th:each="s : ${sessions}" class="session-item">
                 <a class="title" th:text="${s.title}" th:href="@{/ui/sessions/{id}(id=${s.id}, userId=${userId})}">Session</a>
-                <span class="meta" th:text="${#temporals.format(s.updatedAt, 'MM-dd HH:mm')}">time</span>
                 <div class="session-actions">
                     <form method="post" th:action="@{'/ui/sessions/' + ${s.id} + '/favorite'}" style="display:inline">
                         <input type="hidden" name="userId" th:value="${userId}">

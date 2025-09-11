@@ -43,6 +43,11 @@ docker compose up --build
 ```
 - App: http://localhost:8080
 - Adminer: http://localhost:8081 (System: MySQL, Server: mysql, User: root, Password: secret)
+  - If you see "Connection refused" in Adminer:
+    - Wait a few seconds; MySQL has a healthcheck and Adminer will start after it’s healthy.
+    - Ensure you connect to Server: mysql (container name), not localhost.
+    - Check that host port 3306 isn’t already used by a local MySQL. If in use, edit docker-compose.yml and change the mapping to "3307:3306", then restart.
+    - Password is the value of MYSQL_ROOT_PASSWORD in your .env (default: secret).
 - Health: http://localhost:8080/actuator/health (details enabled)
   - Liveness: http://localhost:8080/actuator/health/liveness
   - Readiness: http://localhost:8080/actuator/health/readiness

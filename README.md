@@ -59,6 +59,7 @@ docker compose up --build
 - Swagger UI: http://localhost:8080/swagger-ui/index.html
 - Docs shortcut: http://localhost:8080/docs
 - Simple UI (Thymeleaf): http://localhost:8080/ui (defaults to userId=demo if you hit /ui)
+- Friendly UI error pages for not found (404) and general errors
 
 Add header `X-API-KEY: <your api key>` to API requests.
 

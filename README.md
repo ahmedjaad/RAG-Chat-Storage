@@ -62,6 +62,12 @@ docker compose up --build
 
 Add header `X-API-KEY: <your api key>` to API requests.
 
+Troubleshooting 401 Unauthorized:
+- Ensure you set API_KEY in your .env and restarted the app. The default is `changeme`.
+- Send header name exactly as configured: by default `X-API-KEY`. You can change the header name with `security.api-key.header`.
+- Using the included .http files, define @API_KEY or http-client.env.json with API_KEY.
+- Public endpoints (no key required): `/`, `/actuator/health`, `/docs`, `/swagger-ui/**`, `/ui/**`, and static assets (`/css/**`, `/js/**`, `/images/**`, `/webjars/**`).
+
 ## API
 
 Base path: `/api/v1`

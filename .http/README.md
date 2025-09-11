@@ -23,3 +23,7 @@ Files:
 - ai.http – inference and embeddings endpoints (requires OpenAI env vars configured)
 
 Note: The .http directory contents are git-ignored except for this README and the .keep file.
+
+401 tips when using these requests:
+- Set @API_KEY at the top of the file or via http-client.env.json. The header name is X-API-KEY by default.
+- The server will reply 401 with a hint that includes the expected header name if the key is missing/incorrect.

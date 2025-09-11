@@ -16,3 +16,7 @@ spring:
 
 server:
   port: ${PORT:8080}
+cors:
+  allowed-origins: "*"
+  allowed-methods: GET,POST,PATCH,DELETE,OPTIONS
+  allowed-headers: "*"

@@ -64,7 +64,11 @@ public class SecurityConfig {
                 if (!StringUtils.hasText(apiKeyValue) || !StringUtils.hasText(key) || !apiKeyValue.equals(key)) {
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());
                     response.setContentType("application/json");
-                    response.getWriter().write("{\"error\":\"Unauthorized\"}");
+                    // Provide a helpful message indicating the expected header name
+                    String msg = String.format("{\"error\":\"Unauthorized\",\"hint\":\"Send the API key in header %s matching server configuration. Set API_KEY in your .env.\"}", apiKeyHeader);
+                    response.getWriter().write(msg);
+                    // Optionally include a WWW-Authenticate hint (non-standard for API key, but helps tooling)
+                    response.setHeader("WWW-Authenticate", "ApiKey realm=\"api\", header=\"" + apiKeyHeader + "\"");
                     return;
                 }
                 filterChain.doFilter(request, response);

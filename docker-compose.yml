@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8.3
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-secret}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-rag_chat_storage}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  adminer:
+    image: adminer:latest
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+
+  app:
+    build: .
+    depends_on:
+      - mysql
+    env_file:
+      - .env.example
+    environment:
+      DB_URL: ${DB_URL:-jdbc:mysql://mysql:3306/rag_chat_storage}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      API_KEY: ${API_KEY:-changeme}
+      REQUESTS_PER_MINUTE: ${REQUESTS_PER_MINUTE:-60}
+      RATE_BURST: ${RATE_BURST:-20}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
+    ports:
+      - "8080:8080"
+
+volumes:
+  mysql_data:

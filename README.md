@@ -90,7 +90,7 @@ Base path: `/api/v1`
 ## UI
 
 A built-in Thymeleaf UI is available at /ui with a ChatGPT-like dark theme:
-- Left sidebar lists sessions, create/delete actions, and filter toggle (All / Favorites)
+- Left sidebar lists sessions with small, friendly controls per session (favorite ⭐/☆, inline rename ✎, delete 🗑), and a filter toggle (All / Favorites)
 - Main chat area shows messages with alternating bubbles
 - Sticky composer at the bottom to send USER messages quickly
 - Now, when you send a message, the server calls OpenAI via Spring AI and posts the assistant reply back into the same session (requires OPENAI_API_KEY set)

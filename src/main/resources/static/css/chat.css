@@ -24,7 +24,10 @@ input,textarea,select{background:var(--panel);color:var(--text);border:1px solid
 .session-item:hover{background:var(--panel-2);border-color:var(--border)}
 .session-item .title{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .session-item .meta{color:var(--muted);font-size:12px}
-.session-actions{display:flex;gap:6px}
+.session-actions{display:flex;gap:6px;margin-top:6px}
+.icon-btn{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:4px 8px;cursor:pointer;line-height:1}
+.icon-btn:hover{border-color:var(--accent);color:#fff;background:rgba(16,163,127,0.08)}
+.icon-btn.danger:hover{border-color:var(--danger);background:rgba(239,68,68,0.08)}
 
 .main{display:flex;flex-direction:column;height:100vh}
 .topbar{height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--border);background:var(--panel);position:sticky;top:0;z-index:2}

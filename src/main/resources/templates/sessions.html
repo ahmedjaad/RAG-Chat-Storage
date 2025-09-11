@@ -15,10 +15,9 @@
             <span class="badge" th:text="${userId}">user</span>
         </div>
         <div class="new-session">
-            <form method="post" th:action="@{/ui/sessions}" style="display:flex;gap:8px;width:100%">
+            <form method="post" th:action="@{/ui/sessions}" style="display:flex;gap:8px;width:100%;align-items:center">
                 <input type="hidden" name="userId" th:value="${userId}">
-                <input type="text" name="title" placeholder="New session title" style="flex:1">
-                <button type="submit">New</button>
+                <button type="submit" class="icon-btn" title="New session" aria-label="New session">＋ New</button>
             </form>
             <div class="hr"></div>
             <div style="display:flex;gap:8px">
@@ -32,9 +31,23 @@
             <div th:each="s : ${sessions}" class="session-item">
                 <a class="title" th:text="${s.title}" th:href="@{/ui/sessions/{id}(id=${s.id}, userId=${userId})}">Session</a>
                 <span class="meta" th:text="${#temporals.format(s.updatedAt, 'MM-dd HH:mm')}">time</span>
-                <form method="post" th:action="@{'/ui/sessions/' + ${s.id} + '/delete'}" data-confirm="Delete session?">
+                <div class="session-actions">
+                    <form method="post" th:action="@{'/ui/sessions/' + ${s.id} + '/favorite'}" style="display:inline">
+                        <input type="hidden" name="userId" th:value="${userId}">
+                        <input type="hidden" name="favorite" th:value="${!s.favorite}">
+                        <button class="icon-btn" type="submit" th:title="${s.favorite} ? 'Unfavorite' : 'Favorite'" aria-label="Favorite toggle" th:text="${s.favorite} ? '⭐' : '☆'"></button>
+                    </form>
+                    <button class="icon-btn rename-toggle" type="button" title="Rename" aria-label="Rename" th:attr="data-id=${s.id}">✎</button>
+                    <form method="post" th:action="@{'/ui/sessions/' + ${s.id} + '/delete'}" data-confirm="Delete session?" style="display:inline">
+                        <input type="hidden" name="userId" th:value="${userId}">
+                        <button class="icon-btn danger" type="submit" title="Delete" aria-label="Delete">🗑</button>
+                    </form>
+                </div>
+                <form class="rename-form" method="post" th:action="@{'/ui/sessions/' + ${s.id} + '/title'}" style="display:none;gap:6px;margin-top:6px">
                     <input type="hidden" name="userId" th:value="${userId}">
-                    <button class="secondary" type="submit" title="Delete">✕</button>
+                    <input type="text" name="title" th:placeholder="${s.title}" style="flex:1" />
+                    <button class="icon-btn secondary" type="submit" title="Save" aria-label="Save">✔</button>
+                    <button class="icon-btn secondary rename-cancel" type="button" title="Cancel" aria-label="Cancel">✖</button>
                 </form>
             </div>
         </div>

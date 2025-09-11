@@ -25,4 +25,18 @@
       if (!confirm(msg)) e.preventDefault();
     })
   });
+  // Inline rename toggling in sidebar
+  document.querySelectorAll('.rename-toggle').forEach(btn => {
+    btn.addEventListener('click', function(){
+      const item = btn.closest('.session-item');
+      const form = item ? item.querySelector('.rename-form') : null;
+      if (form) form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'flex' : 'none';
+    });
+  });
+  document.querySelectorAll('.rename-cancel').forEach(btn => {
+    btn.addEventListener('click', function(){
+      const form = btn.closest('.rename-form');
+      if (form) form.style.display = 'none';
+    });
+  });
 })();

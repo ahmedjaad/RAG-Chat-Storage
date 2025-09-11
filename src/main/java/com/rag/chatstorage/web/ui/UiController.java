@@ -48,9 +48,9 @@ public class UiController {
 
     @PostMapping("/sessions")
     public String create(@RequestParam String userId, @RequestParam(required = false) String title) {
-        service.createSession(userId, title);
-        return "redirect:/ui/sessions?userId=" + userId;
-        
+        var s = service.createSession(userId, title);
+        // Redirect to the newly created session for immediate interaction/rename
+        return "redirect:/ui/sessions/" + s.getId() + "?userId=" + userId;
     }
 
     @GetMapping("/sessions/{id}")

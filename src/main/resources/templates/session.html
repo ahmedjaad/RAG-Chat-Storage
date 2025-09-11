@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>RAG Chat Storage - Session</title>
+    <link rel="stylesheet" href="https://unpkg.com/mvp.css@1.12/mvp.css">
+</head>
+<body>
+<header>
+    <h1>Session <span th:text="${sessionId}"></span></h1>
+    <nav>
+        <a th:href="@{'/ui/sessions(?userId=' + ${userId} + ')'}">Back to Sessions</a>
+        <a href="/docs">API Docs</a>
+    </nav>
+</header>
+<main>
+    <section>
+        <h2>Messages</h2>
+        <article th:each="m : ${messages.items}">
+            <header>
+                <strong th:text="${m.sender}"></strong>
+                <small th:text="${m.createdAt}"></small>
+            </header>
+            <p th:text="${m.content}"></p>
+            <pre th:if="${m.context}" th:text="${m.context}"></pre>
+        </article>
+
+        <form method="post" th:action="@{'/ui/sessions/' + ${sessionId} + '/messages'}">
+            <input type="hidden" name="userId" th:value="${userId}">
+            <label>
+                Sender
+                <select name="sender">
+                    <option>USER</option>
+                    <option>ASSISTANT</option>
+                    <option>SYSTEM</option>
+                </select>
+            </label>
+            <label>
+                Content
+                <textarea name="content" rows="3" required></textarea>
+            </label>
+            <label>
+                Context (optional)
+                <textarea name="context" rows="3"></textarea>
+            </label>
+            <button type="submit">Send</button>
+        </form>
+    </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>RAG Chat Storage - Sessions</title>
+    <link rel="stylesheet" href="https://unpkg.com/mvp.css@1.12/mvp.css">
+</head>
+<body>
+<header>
+    <h1>RAG Chat Storage</h1>
+    <nav>
+        <a href="/docs">API Docs</a>
+    </nav>
+</header>
+<main>
+    <section>
+        <h2 th:text="'Sessions for ' + ${userId}">Sessions</h2>
+        <form method="post" th:action="@{/ui/sessions}">
+            <input type="hidden" name="userId" th:value="${userId}">
+            <input type="text" name="title" placeholder="New session title">
+            <button type="submit">Create Session</button>
+        </form>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Favorite</th>
+                <th>Updated</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="s : ${sessions}">
+                <td th:text="${s.id}"></td>
+                <td th:text="${s.title}"></td>
+                <td th:text="${s.favorite}"></td>
+                <td th:text="${s.updatedAt}"></td>
+                <td>
+                    <a th:href="@{'/ui/sessions/' + ${s.id} + '(?userId=' + ${userId} + ')'}">Open</a>
+                    <form method="post" th:action="@{'/ui/sessions/' + ${s.id} + '/delete'}" style="display:inline">
+                        <input type="hidden" name="userId" th:value="${userId}">
+                        <button type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</body>
+</html>

@@ -44,6 +44,8 @@ docker compose up --build
   - Liveness: http://localhost:8080/actuator/health/liveness
   - Readiness: http://localhost:8080/actuator/health/readiness
 - Swagger UI: http://localhost:8080/swagger-ui/index.html
+- Docs shortcut: http://localhost:8080/docs
+- Simple UI (Thymeleaf): http://localhost:8080/ui (defaults to userId=demo if you hit /ui)
 
 Add header `X-API-KEY: <your api key>` to API requests.
 
@@ -65,6 +67,10 @@ Base path: `/api/v1`
 - POST `/api/v1/sessions/{id}/messages` – add message
   - Body: `{ "sender": "USER|ASSISTANT|SYSTEM", "content": "...", "context": "..." }`
 - GET `/api/v1/sessions/{id}/messages?page=0&size=20` – list messages (paginated)
+
+## UI
+
+A minimal server-side rendered UI is included using Thymeleaf under /ui to allow quick manual testing without an API client. It uses the same service layer as the REST API and runs in the same JVM.
 
 ## Development
 

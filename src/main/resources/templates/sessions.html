@@ -23,7 +23,7 @@
         </div>
         <div class="sessions">
             <div th:each="s : ${sessions}" class="session-item">
-                <a class="title" th:text="${s.title}" th:href="@{'/ui/sessions/' + ${s.id} + '(?userId=' + ${userId} + ')'}">Session</a>
+                <a class="title" th:text="${s.title}" th:href="@{/ui/sessions/{id}(id=${s.id}, userId=${userId})}">Session</a>
                 <span class="meta" th:text="${#temporals.format(s.updatedAt, 'MM-dd HH:mm')}">time</span>
                 <form method="post" th:action="@{'/ui/sessions/' + ${s.id} + '/delete'}" data-confirm="Delete session?">
                     <input type="hidden" name="userId" th:value="${userId}">

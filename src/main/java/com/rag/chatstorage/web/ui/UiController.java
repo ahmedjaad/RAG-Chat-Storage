@@ -29,7 +29,10 @@ public class UiController {
     }
 
     @GetMapping("/sessions")
-    public String listSessions(@RequestParam String userId, Model model) {
+    public String listSessions(@RequestParam(required = false) String userId, Model model) {
+        if (userId == null || userId.isBlank()) {
+            userId = "demo"; // default for convenience
+        }
         List<SessionResponse> sessions = service.listSessions(userId).stream()
                 .map(SessionResponse::from)
                 .collect(Collectors.toList());
@@ -46,10 +49,16 @@ public class UiController {
     }
 
     @GetMapping("/sessions/{id}")
-    public String view(@PathVariable Long id, @RequestParam String userId,
+    public String view(@PathVariable Long id,
+                       @RequestParam(required = false) String userId,
                        @RequestParam(defaultValue = "0") int page,
                        @RequestParam(defaultValue = "20") int size,
                        Model model) {
+        // If userId is missing (e.g., malformed URL), derive it from the session
+        if (userId == null || userId.isBlank()) {
+            var s = service.getSessionOrThrow(id);
+            userId = s.getUserId();
+        }
         // Load sidebar sessions for ChatGPT-like layout
         List<SessionResponse> sessions = service.listSessions(userId).stream()
                 .map(SessionResponse::from)

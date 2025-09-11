@@ -23,6 +23,10 @@ public class ChatSessionService {
         this.messageRepository = messageRepository;
     }
 
+    public ChatSession getSessionOrThrow(Long id) {
+        return sessionRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Session not found"));
+    }
+
     public ChatSession createSession(String userId, String title) {
         ChatSession s = new ChatSession();
         s.setUserId(userId);

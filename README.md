@@ -91,3 +91,24 @@ mvn spring-boot:run
 ## Notes
 - CORS is configurable via environment vars.
 - Rate limiter uses a simple in-memory fixed-window; for production consider Redis or Bucket4j.
+
+
+## AI (Spring AI)
+
+This service integrates Spring AI for chat inference and embeddings using OpenAI-compatible models.
+
+- Env vars:
+  - OPENAI_API_KEY – required
+  - OPENAI_BASE_URL – default https://api.openai.com (set to an OpenAI-compatible endpoint if needed)
+  - OPENAI_CHAT_MODEL – default gpt-4o-mini
+  - OPENAI_EMBED_MODEL – default text-embedding-3-small
+
+### Endpoints
+- POST /api/v1/ai/infer
+  - Body: { "prompt": "Hello", "system": "You are a helpful assistant." }
+  - Response: { "content": "...", "metadata": { ... } }
+- POST /api/v1/ai/embeddings
+  - Body: { "inputs": ["text 1", "text 2"] }
+  - Response: { "data": [{"vector": [..]}, ...], "dimensions": 1536 }
+
+Note: These endpoints require the API key header like other APIs (X-API-KEY).

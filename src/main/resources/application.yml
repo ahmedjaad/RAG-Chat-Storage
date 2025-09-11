@@ -12,6 +12,16 @@ spring:
   jackson:
     serialization:
       write-dates-as-timestamps: false
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+      chat:
+        options:
+          model: ${OPENAI_CHAT_MODEL:gpt-4o-mini}
+      embedding:
+        options:
+          model: ${OPENAI_EMBED_MODEL:text-embedding-3-small}
 
 server:
   port: ${PORT:8080}

@@ -75,7 +75,7 @@ Base path: `/api/v1`
 ### Sessions
 - POST `/api/v1/sessions` – create session
   - Body: `{ "userId": "u1", "title": "My chat" }`
-- GET `/api/v1/sessions?userId=u1` – list sessions for user
+- GET `/api/v1/sessions?userId=u1&favorite=true|false` – list sessions for user (optional favorite filter)
 - PATCH `/api/v1/sessions/{id}/title` – rename session
   - Body: `{ "title": "New title" }`
 - PATCH `/api/v1/sessions/{id}/favorite` – mark/unmark favorite
@@ -90,7 +90,7 @@ Base path: `/api/v1`
 ## UI
 
 A built-in Thymeleaf UI is available at /ui with a ChatGPT-like dark theme:
-- Left sidebar lists sessions, create/delete actions
+- Left sidebar lists sessions, create/delete actions, and filter toggle (All / Favorites)
 - Main chat area shows messages with alternating bubbles
 - Sticky composer at the bottom to send USER messages quickly
 - Now, when you send a message, the server calls OpenAI via Spring AI and posts the assistant reply back into the same session (requires OPENAI_API_KEY set)

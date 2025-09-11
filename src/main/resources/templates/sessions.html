@@ -20,6 +20,13 @@
                 <input type="text" name="title" placeholder="New session title" style="flex:1">
                 <button type="submit">New</button>
             </form>
+            <div class="hr"></div>
+            <div style="display:flex;gap:8px">
+                <a class="btn secondary" th:classappend=" ${favorite} == true ? '' : 'active'"
+                   th:href="@{/ui/sessions(userId=${userId})}">All</a>
+                <a class="btn secondary" th:classappend=" ${favorite} == true ? 'active' : ''"
+                   th:href="@{/ui/sessions(userId=${userId}, favorite=true)}">Favorites</a>
+            </div>
         </div>
         <div class="sessions">
             <div th:each="s : ${sessions}" class="session-item">

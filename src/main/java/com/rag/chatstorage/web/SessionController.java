@@ -30,8 +30,9 @@ public class SessionController {
     }
 
     @GetMapping
-    public List<SessionResponse> list(@RequestParam String userId) {
-        return service.listSessions(userId).stream().map(SessionResponse::from).collect(Collectors.toList());
+    public List<SessionResponse> list(@RequestParam String userId,
+                                      @RequestParam(required = false) Boolean favorite) {
+        return service.listSessions(userId, favorite).stream().map(SessionResponse::from).collect(Collectors.toList());
     }
 
     @PatchMapping("/{id}/title")

@@ -31,14 +31,17 @@ public class UiController {
     }
 
     @GetMapping("/sessions")
-    public String listSessions(@RequestParam(required = false) String userId, Model model) {
+    public String listSessions(@RequestParam(required = false) String userId,
+                               @RequestParam(required = false) Boolean favorite,
+                               Model model) {
         if (userId == null || userId.isBlank()) {
             userId = "demo"; // default for convenience
         }
-        List<SessionResponse> sessions = service.listSessions(userId).stream()
+        List<SessionResponse> sessions = service.listSessions(userId, favorite).stream()
                 .map(SessionResponse::from)
                 .collect(Collectors.toList());
         model.addAttribute("userId", userId);
+        model.addAttribute("favorite", favorite);
         model.addAttribute("sessions", sessions);
         return "sessions";
     }
@@ -61,11 +64,13 @@ public class UiController {
             var s = service.getSessionOrThrow(id);
             userId = s.getUserId();
         }
-        // Load sidebar sessions for ChatGPT-like layout
-        List<SessionResponse> sessions = service.listSessions(userId).stream()
+        // Load current session and sidebar sessions for ChatGPT-like layout
+        var current = SessionResponse.from(service.getSessionOrThrow(id));
+        List<SessionResponse> sessions = service.listSessions(userId, null).stream()
                 .map(SessionResponse::from)
                 .collect(Collectors.toList());
         model.addAttribute("sessions", sessions);
+        model.addAttribute("current", current);
 
         Page<com.rag.chatstorage.domain.ChatMessage> p = service.getMessages(id, page, size);
         PagedMessages pm = new PagedMessages(

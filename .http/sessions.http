@@ -15,8 +15,12 @@ Content-Type: application/json
   "title": "{{title}}"
 }
 
-### List sessions for user
+### List sessions for user (all)
 GET {{host}}/api/v1/sessions?userId={{userId}}
+X-API-KEY: {{apiKey}}
+
+### List sessions for user (favorites only)
+GET {{host}}/api/v1/sessions?userId={{userId}}&favorite=true
 X-API-KEY: {{apiKey}}
 
 ### Rename a session

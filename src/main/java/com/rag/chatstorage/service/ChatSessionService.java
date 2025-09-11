@@ -38,6 +38,11 @@ public class ChatSessionService {
         return sessionRepository.findByUserIdOrderByUpdatedAtDesc(userId);
     }
 
+    public List<ChatSession> listSessions(String userId, Boolean favorite) {
+        if (favorite == null) return listSessions(userId);
+        return sessionRepository.findByUserIdAndFavoriteOrderByUpdatedAtDesc(userId, favorite);
+    }
+
     public ChatSession rename(Long sessionId, String title) {
         ChatSession s = sessionRepository.findById(sessionId).orElseThrow(() -> new IllegalArgumentException("Session not found"));
         s.setTitle(title);

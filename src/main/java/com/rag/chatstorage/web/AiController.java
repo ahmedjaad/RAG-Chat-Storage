@@ -53,7 +53,7 @@ public class AiController {
         List<EmbeddingVector> vectors = resp.getResults().stream()
                 .map(r -> new EmbeddingVector(r.getOutput()))
                 .toList();
-        Integer dims = vectors.isEmpty() ? 0 : vectors.get(0).vector().length;
+        Integer dims = vectors.isEmpty() ? 0 : vectors.getFirst().vector().length;
         return new EmbeddingsResponse(vectors, dims);
     }
 }

@@ -1,0 +1,47 @@
+# Java and Maven
+/target/
+!.mvn/wrapper/maven-wrapper.jar
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# Spring Boot
+*.log
+spring.log
+
+# IDEs and editors
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build/coverage
+/.attach_pid*
+hs_err_pid*
+/replay_pid*
+/.java-version
+/.sdkman/
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar.properties
+surefire-reports/
+.failsafe-reports/
+/site/
+/coverage/
+/jacoco.exec
+
+# Local environment
+.env
+*.local
+*.swp
+*.swo

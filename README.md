@@ -30,6 +30,9 @@ Copy `.env.example` to `.env` and adjust as needed.
 cp .env.example .env
 ```
 
+- Local runs: .env is automatically loaded at startup (via spring-dotenv), so you don’t need to export variables manually.
+- Docker Compose: docker compose automatically reads .env in the project root; the app service is configured with `env_file: .env`.
+
 Key variables:
 - `API_KEY` – required to access APIs
 - `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` – MySQL connection
@@ -81,11 +84,8 @@ mvn clean package
 
 Run locally:
 ```
-export API_KEY=changeme
-export DB_URL=jdbc:mysql://localhost:3306/rag_chat_storage
-export DB_USERNAME=root
-export DB_PASSWORD=secret
-mvn spring-boot:run
+cp .env.example .env   # first time only
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
 ## Notes

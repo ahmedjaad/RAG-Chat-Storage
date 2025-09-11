@@ -60,7 +60,3 @@ surefire-reports/
 # Ignore Junie guidelines and tooling
 .junie/
 .junie/guidelines.md
-
-# Ignore HTTP request collections (keep folder tracked)
-.http/**
-!.http/.keep

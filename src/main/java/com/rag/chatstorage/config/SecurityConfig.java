@@ -97,10 +97,31 @@ public class SecurityConfig {
                         w.counter.set(0);
                     }
                     int current = w.counter.incrementAndGet();
-                    if (current > Math.max(rpm, burst)) {
+                    int limit = Math.max(rpm, burst);
+                    int remaining = Math.max(0, limit - current);
+                    // Always expose rate limit headers on every response
+                    response.setHeader("X-RateLimit-Limit", String.valueOf(limit));
+                    response.setHeader("X-RateLimit-Remaining", String.valueOf(remaining));
+                    if (current > limit) {
+                        // compute seconds until window resets
+                        long nowSec = Instant.now().getEpochSecond();
+                        long retryAfter = 60 - (nowSec % 60);
                         response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-                        response.setContentType("application/json");
-                        response.getWriter().write("{\"error\":\"Rate limit exceeded\"}");
+                        response.setHeader("Retry-After", String.valueOf(retryAfter));
+                        response.setContentType("application/problem+json");
+                        String instance = request.getRequestURI();
+                        String body = "{" +
+                                "\"type\":\"about:blank\"," +
+                                "\"title\":\"Too Many Requests\"," +
+                                "\"status\":429," +
+                                "\"detail\":\"Rate limit exceeded. Please retry later.\"," +
+                                "\"instance\":\"" + instance + "\"," +
+                                "\"code\":\"RATE_LIMITED\"," +
+                                "\"limit\":" + limit + "," +
+                                "\"remaining\":" + remaining + "," +
+                                "\"retryAfterSeconds\":" + retryAfter +
+                                "}";
+                        response.getWriter().write(body);
                         return;
                     }
                 }

@@ -1,7 +1,11 @@
 package com.rag.chatstorage.web;
 
+import com.rag.chatstorage.service.AiService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -10,6 +14,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +34,35 @@ public class GlobalExceptionHandler {
         return path != null && path.startsWith("/api/");
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
+    @ExceptionHandler(AiService.AiFriendlyException.class)
+        public Object handleAiFriendly(AiService.AiFriendlyException ex, HttpServletRequest request) {
+            if (wantsHtml(request) && !isApi(request)) {
+                // For UI, keep 5xx page with friendly message
+                ModelAndView mav = new ModelAndView("error/5xx");
+                mav.setStatus(HttpStatus.SERVICE_UNAVAILABLE);
+                mav.addObject("path", request.getRequestURI());
+                mav.addObject("status", 503);
+                mav.addObject("error", ex.getMessage());
+                return mav;
+            }
+            HttpStatus status = switch (ex.getCode() == null ? "" : ex.getCode()) {
+                case "CONFIG_MISSING" -> HttpStatus.SERVICE_UNAVAILABLE;
+                case "AI_UNAVAILABLE" -> HttpStatus.SERVICE_UNAVAILABLE;
+                default -> HttpStatus.SERVICE_UNAVAILABLE;
+            };
+            ProblemDetail pd = ProblemDetail.forStatus(status);
+            pd.setTitle("AI Service Unavailable");
+            pd.setDetail(ex.getMessage());
+            pd.setType(URI.create("about:blank"));
+            pd.setInstance(URI.create(request.getRequestURI()));
+            if (ex.getCode() != null) pd.setProperty("code", ex.getCode());
+            if (ex.getHint() != null) pd.setProperty("hint", ex.getHint());
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.valueOf("application/problem+json"));
+            return new ResponseEntity<>(pd, headers, status);
+        }
+
+        @ExceptionHandler(IllegalArgumentException.class)
     public Object handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest request) {
         if (wantsHtml(request) && !isApi(request)) {
             ModelAndView mav = new ModelAndView("error/404");
@@ -38,9 +71,14 @@ public class GlobalExceptionHandler {
             mav.addObject("error", ex.getMessage());
             return mav;
         }
-        Map<String, Object> body = new HashMap<>();
-        body.put("error", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        pd.setTitle("Not Found");
+        pd.setDetail(ex.getMessage());
+        pd.setType(URI.create("about:blank"));
+        pd.setInstance(URI.create(request.getRequestURI()));
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.valueOf("application/problem+json"));
+        return new ResponseEntity<>(pd, headers, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -57,10 +95,16 @@ public class GlobalExceptionHandler {
             mav.addObject("error", "Validation failed: " + errors);
             return mav;
         }
-        Map<String, Object> body = new HashMap<>();
-        body.put("error", "Validation failed");
-        body.put("details", errors);
-        return ResponseEntity.badRequest().body(body);
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        pd.setTitle("Bad Request");
+        pd.setDetail("Validation failed");
+        pd.setType(URI.create("about:blank"));
+        pd.setInstance(URI.create(request.getRequestURI()));
+        pd.setProperty("errors", errors);
+        pd.setProperty("code", "VALIDATION_FAILED");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.valueOf("application/problem+json"));
+        return new ResponseEntity<>(pd, headers, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
@@ -73,9 +117,15 @@ public class GlobalExceptionHandler {
             mav.addObject("error", "Missing parameter: " + ex.getParameterName());
             return mav;
         }
-        Map<String, Object> body = new HashMap<>();
-        body.put("error", "Missing parameter: " + ex.getParameterName());
-        return ResponseEntity.badRequest().body(body);
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        pd.setTitle("Bad Request");
+        pd.setDetail("Missing parameter: " + ex.getParameterName());
+        pd.setType(URI.create("about:blank"));
+        pd.setInstance(URI.create(request.getRequestURI()));
+        pd.setProperty("code", "MISSING_PARAMETER");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.valueOf("application/problem+json"));
+        return new ResponseEntity<>(pd, headers, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
@@ -88,8 +138,14 @@ public class GlobalExceptionHandler {
             mav.addObject("error", ex.getMessage());
             return mav;
         }
-        Map<String, Object> body = new HashMap<>();
-        body.put("error", "Internal server error");
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+        pd.setTitle("Internal Server Error");
+        pd.setDetail("Internal server error");
+        pd.setType(URI.create("about:blank"));
+        pd.setInstance(URI.create(request.getRequestURI()));
+        pd.setProperty("code", "INTERNAL_ERROR");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.valueOf("application/problem+json"));
+        return new ResponseEntity<>(pd, headers, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

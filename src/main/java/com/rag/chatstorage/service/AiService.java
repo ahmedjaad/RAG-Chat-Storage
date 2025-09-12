@@ -1,9 +1,12 @@
 package com.rag.chatstorage.service;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Service
 public class AiService {
@@ -32,6 +35,8 @@ public class AiService {
         this.chatClient = chatClient;
     }
 
+    @Retry(name = "openai", fallbackMethod = "fallback")
+    @CircuitBreaker(name = "openai", fallbackMethod = "fallback")
     public String infer(String system, String user) {
         if (!StringUtils.hasText(apiKey)) {
             // Map to a friendly, non-technical message
@@ -44,10 +49,46 @@ public class AiService {
             }
             return prompt.user(user).call().content();
         } catch (Exception e) {
+            maybeHonorRetryAfter(e);
             String msg = normalizeMessage(e);
             String hint = extractHint(e);
             throw new AiFriendlyException("AI_UNAVAILABLE", msg, hint);
         }
+    }
+
+    // If provider sends Retry-After on 429/5xx, wait that period before allowing Retry to re-execute
+    private void maybeHonorRetryAfter(Exception e) {
+        if (e instanceof WebClientResponseException wex) {
+            String header = wex.getHeaders().getFirst("Retry-After");
+            if (header == null) return;
+            long waitMs = parseRetryAfter(header);
+            if (waitMs > 0 && waitMs <= 30_000) { // cap to 30s
+                try { Thread.sleep(waitMs); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
+            }
+        }
+    }
+
+    private long parseRetryAfter(String value) {
+        try {
+            value = value.trim();
+            if (value.chars().allMatch(Character::isDigit)) {
+                return Long.parseLong(value) * 1000L;
+            }
+            // RFC 1123 date
+            java.time.ZonedDateTime when = java.time.ZonedDateTime.parse(value, java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME);
+            long millis = java.time.Duration.between(java.time.ZonedDateTime.now(), when).toMillis();
+            return Math.max(millis, 0);
+        } catch (Exception ex) {
+            return 0;
+        }
+    }
+
+    // Fallback for resilience4j annotations
+    @SuppressWarnings("unused")
+    private String fallback(String system, String user, Throwable t) {
+        String msg = normalizeMessage(t instanceof Exception e ? e : new Exception(t));
+        String hint = extractHint(t instanceof Exception e ? e : new Exception(t));
+        throw new AiFriendlyException("AI_UNAVAILABLE", msg, hint);
     }
 
     private String normalizeMessage(Exception e) {

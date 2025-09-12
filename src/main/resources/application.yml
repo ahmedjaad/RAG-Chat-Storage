@@ -19,9 +19,16 @@ spring:
       chat:
         options:
           model: ${OPENAI_CHAT_MODEL:gpt-4o-mini}
+          temperature: ${OPENAI_TEMPERATURE:0.2}
+          max-tokens: ${OPENAI_MAX_TOKENS:512}
       embedding:
         options:
           model: ${OPENAI_EMBED_MODEL:text-embedding-3-small}
+    retry:
+      on-http-statuses: 429,500,502,503,504
+    client:
+      connect-timeout: 10s
+      read-timeout: 10s
 
 server:
   port: ${PORT:8080}
@@ -36,11 +43,33 @@ management:
         liveness:
           include: livenessState
         readiness:
-          include: db
+          include: db,openai
   endpoints:
     web:
       exposure:
         include: health,info
+
+resilience4j:
+  retry:
+    instances:
+      openai:
+        max-attempts: 4
+        wait-duration: 500ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        enable-randomized-wait: true
+        randomized-wait-factor: 0.5
+  circuitbreaker:
+    instances:
+      openai:
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold: 10s
+        minimum-number-of-calls: 10
+        sliding-window-size: 20
+        sliding-window-type: COUNT_BASED
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
 
 # API Key and Rate Limiting
 security:

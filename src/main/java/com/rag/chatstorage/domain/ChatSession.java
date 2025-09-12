@@ -1,12 +1,16 @@
 package com.rag.chatstorage.domain;
 
 import jakarta.persistence.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "chat_sessions")
+@EntityListeners(AuditingEntityListener.class)
 public class ChatSession {
 
     @Id
@@ -23,9 +27,11 @@ public class ChatSession {
     @Column(nullable = false)
     private boolean favorite = false;
 
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
+    @LastModifiedDate
     @Column(nullable = false)
     private OffsetDateTime updatedAt;
 
@@ -35,17 +41,9 @@ public class ChatSession {
 
     @PrePersist
     public void onCreate() {
-        OffsetDateTime now = OffsetDateTime.now();
-        this.createdAt = now;
-        this.updatedAt = now;
         if (this.title == null || this.title.isBlank()) {
             this.title = "New Session";
         }
-    }
-
-    @PreUpdate
-    public void onUpdate() {
-        this.updatedAt = OffsetDateTime.now();
     }
 
     // getters and setters

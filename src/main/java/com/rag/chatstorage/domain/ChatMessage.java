@@ -1,10 +1,13 @@
 package com.rag.chatstorage.domain;
 
 import jakarta.persistence.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "chat_messages")
+@EntityListeners(AuditingEntityListener.class)
 public class ChatMessage {
 
     public enum Sender {
@@ -31,13 +34,9 @@ public class ChatMessage {
     @Column
     private String context; // optional JSON or text context
 
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private OffsetDateTime createdAt;
-
-    @PrePersist
-    public void onCreate() {
-        this.createdAt = OffsetDateTime.now();
-    }
 
     // getters and setters
     public Long getId() { return id; }

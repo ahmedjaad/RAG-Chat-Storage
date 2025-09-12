@@ -28,6 +28,14 @@ public class UiController {
         this.userService = userService;
     }
 
+    @GetMapping("/docs")
+    public String docs(@RequestParam(required = false) String userId, org.springframework.ui.Model model) {
+        if (userId == null || userId.isBlank()) userId = "demo";
+        userService.ensureUser(userId);
+        model.addAttribute("userId", userId);
+        return "docs";
+    }
+
     // Public users list for UI suggestions (no API key required since under /ui)
     @GetMapping(value = "/users.json")
     @ResponseBody

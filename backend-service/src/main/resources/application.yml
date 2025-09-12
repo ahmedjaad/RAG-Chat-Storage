@@ -16,6 +16,12 @@ spring:
   jackson:
     serialization:
       write-dates-as-timestamps: false
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.model.azure.openai.autoconfigure.AzureOpenAiAutoConfiguration
+      - org.springframework.ai.model.azure.openai.autoconfigure.AzureOpenAiChatAutoConfiguration
+      - org.springframework.ai.model.azure.openai.autoconfigure.AzureOpenAiEmbeddingAutoConfiguration
+      - org.springframework.ai.model.azure.openai.autoconfigure.AzureOpenAiClientBuilderConfiguration
   ai:
     retry:
       on-http-statuses: 429,500,502,503,504

@@ -64,4 +64,12 @@ public class SessionDtos {
             long totalElements,
             int totalPages
     ) {}
+
+    public record PagedSessions(
+            java.util.List<SessionResponse> items,
+            int page,
+            int size,
+            long totalElements,
+            int totalPages
+    ) {}
 }

@@ -30,9 +30,16 @@ public class SessionController {
     }
 
     @GetMapping
-    public List<SessionResponse> list(@RequestParam String userId,
-                                      @RequestParam(required = false) Boolean favorite) {
-        return service.listSessions(userId, favorite).stream().map(SessionResponse::from).collect(Collectors.toList());
+    public PagedSessions list(@RequestParam String userId,
+                              @RequestParam(required = false) Boolean favorite,
+                              @RequestParam(required = false) String q,
+                              @RequestParam(defaultValue = "0") int page,
+                              @RequestParam(defaultValue = "20") int size) {
+        var p = service.pageSessions(userId, favorite, q, page, size);
+        return new PagedSessions(
+                p.getContent().stream().map(SessionResponse::from).collect(Collectors.toList()),
+                p.getNumber(), p.getSize(), p.getTotalElements(), p.getTotalPages()
+        );
     }
 
     @PatchMapping("/{id}/title")

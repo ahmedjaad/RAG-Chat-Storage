@@ -7,6 +7,7 @@ import com.rag.chatstorage.repository.ChatMessageRepository;
 import com.rag.chatstorage.repository.ChatSessionRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +46,20 @@ public class ChatSessionService {
     public List<ChatSession> listSessions(String userId, Boolean favorite) {
         if (favorite == null) return listSessions(userId);
         return sessionRepository.findByUser_UserIdAndFavoriteOrderByUpdatedAtDesc(userId, favorite);
+    }
+
+    public Page<ChatSession> pageSessions(String userId, Boolean favorite, String q, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        if (favorite == null && (q == null || q.isBlank())) {
+            return sessionRepository.findByUser_UserIdOrderByUpdatedAtDesc(userId, pageable);
+        }
+        if (favorite == null) {
+            return sessionRepository.findByUser_UserIdAndTitleContainingIgnoreCaseOrderByUpdatedAtDesc(userId, q, pageable);
+        }
+        if (q == null || q.isBlank()) {
+            return sessionRepository.findByUser_UserIdAndFavoriteOrderByUpdatedAtDesc(userId, favorite, pageable);
+        }
+        return sessionRepository.findByUser_UserIdAndFavoriteAndTitleContainingIgnoreCaseOrderByUpdatedAtDesc(userId, favorite, q, pageable);
     }
 
     public ChatSession rename(Long sessionId, String title) {

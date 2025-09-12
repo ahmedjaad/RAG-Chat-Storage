@@ -81,7 +81,7 @@ Base path: `/api/v1`
 ### Sessions
 - POST `/api/v1/sessions` – create session
   - Body: `{ "userId": "u1", "title": "My chat" }`
-- GET `/api/v1/sessions?userId=u1&favorite=true|false` – list sessions for user (optional favorite filter)
+- GET `/api/v1/sessions?userId=u1&favorite=true|false&page=0&size=20&q=term` – list sessions for user (paginated, optional favorite, optional `q` for title contains; ordered by updatedAt desc)
 - PATCH `/api/v1/sessions/{id}/title` – rename session
   - Body: `{ "title": "New title" }`
 - PATCH `/api/v1/sessions/{id}/favorite` – mark/unmark favorite

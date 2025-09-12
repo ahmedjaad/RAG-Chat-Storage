@@ -123,6 +123,12 @@ databaseChangeLog:
               - column:
                   name: updated_at
         - createIndex:
+            tableName: chat_sessions
+            indexName: idx_chat_sessions_title
+            columns:
+              - column:
+                  name: title
+        - createIndex:
             tableName: chat_messages
             indexName: idx_chat_messages_session_created
             columns:

@@ -61,16 +61,14 @@
 
   // Populate userId suggestions from API
   try {
-    fetch('/api/v1/users', { headers: { 'X-API-KEY': (window.UI_API_KEY||'') } })
+    fetch('/ui/users.json')
       .then(r => r.ok ? r.json() : [])
       .then(users => {
         const dl = document.getElementById('userIdSuggestions');
         if (!dl || !Array.isArray(users)) return;
         dl.innerHTML = '';
-        users.forEach(u => {
+        users.forEach(val => {
           const opt = document.createElement('option');
-          // Support both raw string or object with userId
-          const val = typeof u === 'string' ? u : (u.userId || '');
           if (val) { opt.value = val; dl.appendChild(opt); }
         });
       })

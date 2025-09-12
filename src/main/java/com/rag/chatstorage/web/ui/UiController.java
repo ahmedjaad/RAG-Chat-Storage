@@ -28,6 +28,13 @@ public class UiController {
         this.userService = userService;
     }
 
+    // Public users list for UI suggestions (no API key required since under /ui)
+    @GetMapping(value = "/users.json")
+    @ResponseBody
+    public java.util.List<String> usersJson() {
+        return userService.listUsers().stream().map(u -> u.getUserId()).toList();
+    }
+
     // Compose from blank state: auto-create a session from the first message
     @PostMapping("/compose")
     public String composeFromBlank(@RequestParam String userId,

@@ -217,3 +217,10 @@ Examples:
   - Response: { "data": [{"vector": [..]}, ...], "dimensions": 1536 }
 
 Note: These endpoints require the API key header like other APIs (X-API-KEY).
+
+
+## Contributing
+
+Please see CONTRIBUTING.md for guidelines.
+
+Important: after each prompt that asks you to make changes, commit the changes when all is well (build passes and tests are green). Do not push; maintainers/CI will handle pushing as appropriate.

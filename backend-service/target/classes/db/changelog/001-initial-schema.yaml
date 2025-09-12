@@ -5,16 +5,13 @@ databaseChangeLog:
       preConditions:
         onFail: MARK_RAN
         onError: MARK_RAN
-        nestedPreconditions:
-          - not:
-              tableExists:
-                tableName: users
-          - not:
-              tableExists:
-                tableName: chat_sessions
-          - not:
-              tableExists:
-                tableName: chat_messages
+        or:
+          - tableExists:
+              tableName: users
+          - tableExists:
+              tableName: chat_sessions
+          - tableExists:
+              tableName: chat_messages
       changes:
         - createTable:
             tableName: users

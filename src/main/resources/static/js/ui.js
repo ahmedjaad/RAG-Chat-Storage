@@ -46,17 +46,46 @@
     setTimeout(()=>{ toast.style.display = 'none'; }, 5000);
   }
 
-  // Mobile sidebar toggle
+  // Mobile sidebar toggle and backdrop handling
   const sidebar = document.querySelector('.sidebar');
   const menuBtn = document.getElementById('menuToggle');
+  const backdrop = document.getElementById('backdrop');
+  function isSmallScreen(){ return window.matchMedia && window.matchMedia('(max-width: 768px)').matches; }
+  function openSidebar(){
+    if (!sidebar) return;
+    sidebar.classList.add('open');
+    if (backdrop) backdrop.classList.add('visible');
+    if (menuBtn){ menuBtn.setAttribute('aria-expanded','true'); menuBtn.textContent='✖'; menuBtn.setAttribute('aria-label','Close menu'); }
+  }
+  function closeSidebar(){
+    if (!sidebar) return;
+    sidebar.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('visible');
+    if (menuBtn){ menuBtn.setAttribute('aria-expanded','false'); menuBtn.textContent='☰'; menuBtn.setAttribute('aria-label','Open menu'); }
+  }
   if (menuBtn && sidebar) {
-    menuBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('open');
+    // Initialize button state
+    menuBtn.setAttribute('aria-expanded','false');
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (sidebar.classList.contains('open')) closeSidebar(); else openSidebar();
     });
     // Close sidebar when clicking a session link
     document.querySelectorAll('.session-item a.title').forEach(a => a.addEventListener('click', ()=>{
-      sidebar.classList.remove('open');
+      closeSidebar();
     }));
+  }
+  if (backdrop){
+    backdrop.addEventListener('click', ()=> closeSidebar());
+  }
+  // Close sidebar when clicking the main content or focusing/typing in composer on small screens
+  const mainEl = document.querySelector('.main');
+  if (mainEl){
+    mainEl.addEventListener('click', ()=>{ if (isSmallScreen()) closeSidebar(); });
+  }
+  if (ta){
+    ta.addEventListener('focus', ()=>{ if (isSmallScreen()) closeSidebar(); });
+    ta.addEventListener('input', ()=>{ if (isSmallScreen()) closeSidebar(); });
   }
 
   // Populate userId suggestions from API

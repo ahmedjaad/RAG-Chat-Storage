@@ -12,6 +12,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.net.URI;
@@ -105,6 +106,27 @@ public class GlobalExceptionHandler {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.valueOf("application/problem+json"));
         return new ResponseEntity<>(pd, headers, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public Object handleMaxUpload(MaxUploadSizeExceededException ex, HttpServletRequest request) {
+        if (wantsHtml(request) && !isApi(request)) {
+            ModelAndView mav = new ModelAndView("error/4xx");
+            mav.setStatus(HttpStatus.PAYLOAD_TOO_LARGE);
+            mav.addObject("path", request.getRequestURI());
+            mav.addObject("status", 413);
+            mav.addObject("error", "Payload too large");
+            return mav;
+        }
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.PAYLOAD_TOO_LARGE);
+        pd.setTitle("Payload Too Large");
+        pd.setDetail("Request payload exceeds allowed size");
+        pd.setType(URI.create("about:blank"));
+        pd.setInstance(URI.create(request.getRequestURI()));
+        pd.setProperty("code", "PAYLOAD_TOO_LARGE");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.valueOf("application/problem+json"));
+        return new ResponseEntity<>(pd, headers, HttpStatus.PAYLOAD_TOO_LARGE);
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)

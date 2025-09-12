@@ -34,6 +34,13 @@ spring:
 
 server:
   port: ${PORT:8080}
+  # Max request size is enforced via servlet.multipart and underlying Tomcat connector
+
+# Request size limits (multipart and form bodies)
+servlet:
+  multipart:
+    max-file-size: ${MAX_FILE_SIZE:2MB}
+    max-request-size: ${MAX_REQUEST_SIZE:2MB}
 
 management:
   endpoint:
@@ -78,6 +85,8 @@ security:
   api-key:
     header: X-API-KEY
     value: ${API_KEY:changeme}
+    # Optional: comma-separated list of valid API keys
+    values: ${API_KEYS:}
 rate-limit:
   requests-per-minute: ${REQUESTS_PER_MINUTE:60}
   burst: ${RATE_BURST:20}

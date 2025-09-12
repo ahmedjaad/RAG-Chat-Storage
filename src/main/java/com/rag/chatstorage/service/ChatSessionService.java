@@ -84,6 +84,10 @@ public class ChatSessionService {
         m.setSession(s);
         m.setSender(sender);
         m.setContent(content);
+        // Cap context length defensively to avoid oversized storage even if validation bypassed
+        if (context != null && context.length() > 20000) {
+            context = context.substring(0, 20000);
+        }
         m.setContext(context);
         return messageRepository.save(m);
     }

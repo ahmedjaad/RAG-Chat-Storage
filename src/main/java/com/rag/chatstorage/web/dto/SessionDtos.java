@@ -5,6 +5,7 @@ import com.rag.chatstorage.domain.ChatSession;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -22,8 +23,8 @@ public class SessionDtos {
 
     public record AddMessageRequest(
             @NotNull ChatMessage.Sender sender,
-            @NotBlank String content,
-            String context
+            @NotBlank @Size(max = 10000) String content,
+            @Size(max = 20000) String context
     ) {}
 
     public record PageRequestQuery(

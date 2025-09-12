@@ -30,6 +30,9 @@ public class SecurityConfig {
     @Value("${security.api-key.value:changeme}")
     private String apiKeyValue;
 
+    @Value("${security.api-key.values:}")
+    private String apiKeyValues; // optional comma-separated list
+
     @Value("${rate-limit.requests-per-minute:60}")
     private int rpm;
 
@@ -61,7 +64,20 @@ public class SecurityConfig {
                     return;
                 }
                 String key = request.getHeader(apiKeyHeader);
-                if (!StringUtils.hasText(apiKeyValue) || !StringUtils.hasText(key) || !apiKeyValue.equals(key)) {
+                boolean authorized = false;
+                if (StringUtils.hasText(key)) {
+                    // Check single value
+                    if (StringUtils.hasText(apiKeyValue) && apiKeyValue.equals(key)) {
+                        authorized = true;
+                    }
+                    // Check list values
+                    if (!authorized && StringUtils.hasText(apiKeyValues)) {
+                        for (String v : apiKeyValues.split(",")) {
+                            if (key.equals(v.trim()) && !v.trim().isEmpty()) { authorized = true; break; }
+                        }
+                    }
+                }
+                if (!authorized) {
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());
                     response.setContentType("application/json");
                     // Provide a helpful message indicating the expected header name
@@ -156,6 +172,60 @@ public class SecurityConfig {
                 } else {
                     mapping.allowedOrigins(origins).allowCredentials(true);
                 }
+            }
+        };
+    }
+
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE + 3)
+    public OncePerRequestFilter securityHeadersFilter() {
+        final String csp = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'";
+        return new OncePerRequestFilter() {
+            @Override
+            protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+                response.setHeader("X-Content-Type-Options", "nosniff");
+                response.setHeader("X-Frame-Options", "DENY");
+                response.setHeader("Referrer-Policy", "no-referrer");
+                // Apply CSP to all responses (primarily affects UI pages)
+                response.setHeader("Content-Security-Policy", csp);
+                filterChain.doFilter(request, response);
+            }
+        };
+    }
+
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE + 0)
+    public OncePerRequestFilter requestSizeLimitFilter(
+            @Value("${request.max-bytes:0}") long maxBytes
+    ) {
+        // If maxBytes <= 0, do nothing
+        return new OncePerRequestFilter() {
+            @Override
+            protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+                if (maxBytes > 0) {
+                    String cl = request.getHeader("Content-Length");
+                    if (cl != null) {
+                        try {
+                            long contentLength = Long.parseLong(cl);
+                            if (contentLength > maxBytes) {
+                                response.setStatus(HttpStatus.PAYLOAD_TOO_LARGE.value());
+                                response.setContentType("application/problem+json");
+                                String instance = request.getRequestURI();
+                                String body = "{" +
+                                        "\"type\":\"about:blank\"," +
+                                        "\"title\":\"Payload Too Large\"," +
+                                        "\"status\":413," +
+                                        "\"detail\":\"Request payload exceeds allowed size.\"," +
+                                        "\"instance\":\"" + instance + "\"," +
+                                        "\"code\":\"PAYLOAD_TOO_LARGE\"" +
+                                        "}";
+                                response.getWriter().write(body);
+                                return;
+                            }
+                        } catch (NumberFormatException ignored) { }
+                    }
+                }
+                filterChain.doFilter(request, response);
             }
         };
     }

@@ -28,6 +28,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnBean(io.github.bucket4j.distributed.proxy.ProxyManager.class)
 @Order(Ordered.HIGHEST_PRECEDENCE + 2)
 public class RateLimitFilter extends OncePerRequestFilter {
     private static final Logger log = LoggerFactory.getLogger(RateLimitFilter.class);

@@ -27,7 +27,7 @@ class AiControllerSmokeTest {
     @MockBean(answer = Answers.RETURNS_DEEP_STUBS)
     ChatClient chatClient;
 
-    @MockBean
+    @MockBean(name = "embeddingModel")
     EmbeddingModel embeddingModel;
 
     @Resource

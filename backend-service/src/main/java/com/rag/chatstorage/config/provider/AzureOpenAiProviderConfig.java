@@ -18,6 +18,7 @@ public class AzureOpenAiProviderConfig {
     }
 
     @Bean
+    @org.springframework.context.annotation.Primary
     public EmbeddingModel embeddingModel(AzureOpenAiEmbeddingModel azureOpenAiEmbeddingModel) {
         return azureOpenAiEmbeddingModel;
     }

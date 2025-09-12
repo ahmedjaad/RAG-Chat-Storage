@@ -10,6 +10,9 @@ import org.springframework.test.context.ActiveProfiles;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
+@org.springframework.test.context.TestPropertySource(properties = {
+        "spring.ai.openai.api-key=dummy"
+})
 class OpenAiDefaultProfileContextTest {
 
     @Test

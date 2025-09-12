@@ -15,7 +15,6 @@ import java.time.OffsetDateTime;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Import(org.springframework.data.jpa.domain.support.AuditingEntityListener.class)
 @ActiveProfiles("test")
 public class ChatSessionRepositoryTest {
 

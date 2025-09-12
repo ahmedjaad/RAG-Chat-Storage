@@ -11,6 +11,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@org.springframework.test.context.TestPropertySource(properties = {
+        "spring.ai.openai.api-key=dummy"
+})
 @AutoConfigureMockMvc
 class AppTest {
 

@@ -21,6 +21,7 @@ public class AnthropicProviderConfig {
     }
 
     @Bean
+    @org.springframework.context.annotation.Primary
     public EmbeddingModel embeddingModel(OpenAiEmbeddingModel openAiEmbeddingModel) {
         return openAiEmbeddingModel;
     }

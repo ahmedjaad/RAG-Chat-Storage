@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 import java.time.Duration;
 
 @Configuration
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "app.ratelimit.enabled", havingValue = "true")
 @EnableConfigurationProperties(RateLimitProperties.class)
 public class RateLimitingConfig {
     private static final Logger log = LoggerFactory.getLogger(RateLimitingConfig.class);

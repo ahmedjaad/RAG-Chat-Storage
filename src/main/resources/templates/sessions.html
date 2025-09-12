@@ -10,10 +10,11 @@
 <body>
 <div class="app">
     <aside class="sidebar">
-        <div class="header">
+        <div class="header" style="flex-direction:column;align-items:flex-start;gap:10px">
             <div class="brand">RAG Chat Storage</div>
-            <form method="get" th:action="@{/ui/sessions}" style="margin-left:auto;display:flex;gap:6px;align-items:center">
-                <input type="text" name="userId" th:placeholder="${userId}" style="width:140px" />
+            <form method="get" th:action="@{/ui/sessions}" style="display:flex;gap:6px;align-items:center;width:100%">
+                <input type="text" name="userId" id="userIdInput" th:placeholder="${userId}" style="flex:1" list="userIdSuggestions" autocomplete="off" />
+                <datalist id="userIdSuggestions"></datalist>
                 <button class="secondary" type="submit" title="Switch user">Switch</button>
             </form>
             <span class="badge" th:text="${userId}">user</span>

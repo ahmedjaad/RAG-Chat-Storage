@@ -80,6 +80,68 @@ rate-limit:
   requests-per-minute: ${REQUESTS_PER_MINUTE:60}
   burst: ${RATE_BURST:20}
 
+# Distributed rate limiting
+ratelimit:
+  enabled: true
+  trustProxies: false
+  keyPrefix: "ratelimit:"
+  defaultTier: default
+  host: ${REDIS_HOST:localhost}
+  port: ${REDIS_PORT:6379}
+  password: ${REDIS_PASSWORD:}
+  ssl: ${REDIS_SSL:false}
+  database: ${REDIS_DATABASE:0}
+  keyTtlSeconds: 172800
+  whitelistPaths:
+    - "/"
+    - "/docs"
+    - "/swagger-ui/**"
+    - "/v3/api-docs/**"
+    - "/actuator/health/**"
+    - "/ui/**"
+    - "/static/**"
+  apiKeys:
+    # Map API keys to tiers; example defaults
+    "key_demo": default
+  policies:
+    - id: default-api
+      match:
+        methods: [GET, POST, PATCH, DELETE]
+        paths: ["/api/**"]
+      bandwidths:
+        - limit: 60
+          windowSeconds: 60
+          refillStrategy: smooth
+        - limit: 1000
+          windowSeconds: 86400
+          refillStrategy: interval
+      costs:
+        - path: "/api/v1/ai/infer"
+          method: POST
+          tokens: 2
+        - path: "/api/v1/ai/embeddings"
+          method: POST
+          tokens: 5
+    - id: premium-api
+      tier: premium
+      match:
+        methods: [GET, POST, PATCH, DELETE]
+        paths: ["/api/**"]
+      bandwidths:
+        - limit: 120
+          windowSeconds: 60
+          refillStrategy: smooth
+        - limit: 20000
+          windowSeconds: 86400
+          refillStrategy: interval
+      costs:
+        - path: "/api/v1/ai/infer"
+          method: POST
+          tokens: 1
+        - path: "/api/v1/ai/embeddings"
+          method: POST
+          tokens: 3
+
 # CORS
 cors:
   # Note: If you set allowed-origins to '*', credentials (cookies/auth) will be disabled by design.

@@ -92,65 +92,7 @@ public class SecurityConfig {
         };
     }
 
-    // Simple fixed-window per-key rate limiter (minute granularity) with burst cap
-    @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE + 2)
-    public OncePerRequestFilter rateLimitFilter() {
-        final Map<String, Window> buckets = new ConcurrentHashMap<>();
-        return new OncePerRequestFilter() {
-            @Override
-            protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-                String key = request.getRemoteAddr();
-                String apiKey = request.getHeader(apiKeyHeader);
-                if (StringUtils.hasText(apiKey)) {
-                    key = apiKey; // rate limit per API key primarily
-                }
-                long minute = Instant.now().getEpochSecond() / 60;
-                Window w = buckets.computeIfAbsent(key, k -> new Window(minute, new AtomicInteger(0)));
-                synchronized (w) {
-                    if (w.minute != minute) {
-                        w.minute = minute;
-                        w.counter.set(0);
-                    }
-                    int current = w.counter.incrementAndGet();
-                    int limit = Math.max(rpm, burst);
-                    int remaining = Math.max(0, limit - current);
-                    // Always expose rate limit headers on every response
-                    response.setHeader("X-RateLimit-Limit", String.valueOf(limit));
-                    response.setHeader("X-RateLimit-Remaining", String.valueOf(remaining));
-                    if (current > limit) {
-                        // compute seconds until window resets
-                        long nowSec = Instant.now().getEpochSecond();
-                        long retryAfter = 60 - (nowSec % 60);
-                        response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-                        response.setHeader("Retry-After", String.valueOf(retryAfter));
-                        response.setContentType("application/problem+json");
-                        String instance = request.getRequestURI();
-                        String body = "{" +
-                                "\"type\":\"about:blank\"," +
-                                "\"title\":\"Too Many Requests\"," +
-                                "\"status\":429," +
-                                "\"detail\":\"Rate limit exceeded. Please retry later.\"," +
-                                "\"instance\":\"" + instance + "\"," +
-                                "\"code\":\"RATE_LIMITED\"," +
-                                "\"limit\":" + limit + "," +
-                                "\"remaining\":" + remaining + "," +
-                                "\"retryAfterSeconds\":" + retryAfter +
-                                "}";
-                        response.getWriter().write(body);
-                        return;
-                    }
-                }
-                filterChain.doFilter(request, response);
-            }
-        };
-    }
-
-    private static class Window {
-        long minute;
-        AtomicInteger counter;
-        Window(long minute, AtomicInteger counter) { this.minute = minute; this.counter = counter; }
-    }
+    // Rate limiting is now handled by distributed Bucket4j filter in com.rag.chatstorage.ratelimit.RateLimitFilter
 
     @Bean
     public WebMvcConfigurer corsConfigurer(

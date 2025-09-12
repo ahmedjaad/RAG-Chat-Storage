@@ -105,6 +105,26 @@ Tip: Open http://localhost:8080/ui to get redirected to a demo user (userId=demo
 
 Mobile: On small screens, use the ☰ button in the top bar to open/close the sessions sidebar.
 
+## Correlating logs via X-Request-Id
+
+This service emits structured JSON logs (Logback + logstash encoder). Each request receives a requestId that is:
+- Accepted from the incoming header X-Request-Id, or generated if absent
+- Added to MDC as requestId and returned as X-Request-Id response header
+- Included in all log events for that request, including a single access log line with method, path, status, and duration
+
+To trace a request end-to-end:
+- Send a header: X-Request-Id: <your-id> (optional)
+- Or take the X-Request-Id from the response header
+- Filter your logs by {"requestId":"..."}
+
+Example curl:
+
+curl -i http://localhost:8080/api/v1/sessions?userId=demo \\
+  -H "X-API-KEY: $API_KEY" \\
+  -H "X-Request-Id: demo-req-123"
+
+You will see one access log entry with that requestId.
+
 ## Development
 
 Build & test:

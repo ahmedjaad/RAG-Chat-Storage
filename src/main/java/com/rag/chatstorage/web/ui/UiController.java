@@ -28,6 +28,40 @@ public class UiController {
         this.userService = userService;
     }
 
+    // Compose from blank state: auto-create a session from the first message
+    @PostMapping("/compose")
+    public String composeFromBlank(@RequestParam String userId,
+                                   @RequestParam("content") String content,
+                                   @RequestParam(value = "context", required = false) String context,
+                                   org.springframework.web.servlet.mvc.support.RedirectAttributes ra) {
+        userService.ensureUser(userId);
+        // Derive session title from first 15 non-whitespace chars
+        String trimmed = content == null ? "" : content.trim();
+        String title = trimmed.length() <= 15 ? trimmed : trimmed.substring(0, 15);
+        if (title.isBlank()) title = "New Session";
+        var session = service.createSession(userId, title);
+        // Save the user's first message
+        service.addMessage(session.getId(), com.rag.chatstorage.domain.ChatMessage.Sender.USER, content, context);
+        // Try AI reply
+        try {
+            String system = "You are a helpful AI assistant.";
+            String reply = aiService.infer(system, content);
+            service.addMessage(session.getId(), com.rag.chatstorage.domain.ChatMessage.Sender.ASSISTANT, reply, null);
+        } catch (com.rag.chatstorage.service.AiService.AiFriendlyException afe) {
+            ra.addFlashAttribute("uiAiIssue", true);
+            ra.addFlashAttribute("uiAiMsg", afe.getMessage());
+            ra.addFlashAttribute("uiAiCode", afe.getCode());
+            if (afe.getHint() != null && !afe.getHint().isBlank()) {
+                ra.addFlashAttribute("uiAiHint", afe.getHint());
+            }
+        } catch (Exception e) {
+            ra.addFlashAttribute("uiAiIssue", true);
+            ra.addFlashAttribute("uiAiMsg", "The assistant couldn’t respond right now. Please try again.");
+            ra.addFlashAttribute("uiAiCode", "AI_UNAVAILABLE");
+        }
+        return "redirect:/ui/sessions/" + session.getId() + "?userId=" + userId;
+    }
+
     @GetMapping
     public String index() {
         return "redirect:/ui/sessions?userId=demo";

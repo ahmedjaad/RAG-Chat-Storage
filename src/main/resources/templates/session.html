@@ -41,7 +41,7 @@
                 </div>
                 <form class="rename-form" method="post" th:action="@{'/ui/sessions/' + ${s.id} + '/title'}" style="display:none;gap:6px;margin-top:6px">
                     <input type="hidden" name="userId" th:value="${userId}">
-                    <input type="text" name="title" th:placeholder="${s.title}" style="flex:1" />
+                    <input type="text" name="title" th:placeholder="${s.title}" th:value="${s.title}" style="flex:1" />
                     <button class="icon-btn secondary" type="submit" title="Save" aria-label="Save">✔</button>
                     <button class="icon-btn secondary rename-cancel" type="button" title="Cancel" aria-label="Cancel">✖</button>
                 </form>

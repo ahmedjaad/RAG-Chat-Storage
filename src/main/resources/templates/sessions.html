@@ -48,7 +48,7 @@
                 </div>
                 <form class="rename-form" method="post" th:action="@{'/ui/sessions/' + ${s.id} + '/title'}" style="display:none;gap:6px;margin-top:6px">
                     <input type="hidden" name="userId" th:value="${userId}">
-                    <input type="text" name="title" th:placeholder="${s.title}" style="flex:1" />
+                    <input type="text" name="title" th:placeholder="${s.title}" th:value="${s.title}" style="flex:1" />
                     <button class="icon-btn secondary" type="submit" title="Save" aria-label="Save">✔</button>
                     <button class="icon-btn secondary rename-cancel" type="button" title="Cancel" aria-label="Cancel">✖</button>
                 </form>
@@ -62,9 +62,21 @@
                 <a href="/docs" class="btn secondary">Docs</a>
             </div>
         </div>
-        <div class="chat" style="display:flex;align-items:center;justify-content:center;color:var(--muted)">
-            <div>
-                <p>Select a session on the left, or create a new one.</p>
+        <div class="chat">
+            <!-- Blank chat area with composer to start a new session like ChatGPT -->
+            <div style="margin:auto;max-width:820px;width:100%">
+                <div style="text-align:center;color:var(--muted);margin-bottom:12px">Start a new conversation</div>
+                <div class="composer">
+                    <div class="wrap">
+                        <form method="post" th:action="@{/ui/compose}" style="display:flex;gap:8px;flex:1">
+                            <input type="hidden" name="userId" th:value="${userId}">
+                            <textarea name="content" rows="2" placeholder="Message..." required></textarea>
+                            <div class="send">
+                                <button type="submit">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </main>

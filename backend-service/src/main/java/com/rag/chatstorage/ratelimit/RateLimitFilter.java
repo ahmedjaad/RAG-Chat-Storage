@@ -28,7 +28,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
-@org.springframework.boot.autoconfigure.condition.ConditionalOnBean(io.github.bucket4j.distributed.proxy.ProxyManager.class)
 @Order(Ordered.HIGHEST_PRECEDENCE + 2)
 public class RateLimitFilter extends OncePerRequestFilter {
     private static final Logger log = LoggerFactory.getLogger(RateLimitFilter.class);
@@ -42,9 +41,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
     @Value("${security.api-key.header:X-API-KEY}")
     private String apiKeyHeader;
 
-    public RateLimitFilter(RateLimitProperties props, ProxyManager<byte[]> proxyManager, MeterRegistry meterRegistry) {
+    public RateLimitFilter(RateLimitProperties props, org.springframework.beans.factory.ObjectProvider<ProxyManager<byte[]>> proxyManagerProvider, MeterRegistry meterRegistry) {
         this.props = props;
-        this.proxyManager = proxyManager;
+        this.proxyManager = proxyManagerProvider.getIfAvailable();
         this.meterRegistry = meterRegistry;
     }
 

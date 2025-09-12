@@ -83,6 +83,9 @@ rate-limit:
 # Distributed rate limiting
 ratelimit:
   enabled: true
+  # Enable Redis-backed distributed rate limiting only when explicitly requested.
+  # Local in-memory rate limiting remains active regardless of this flag.
+  redisEnabled: ${RATELIMIT_REDIS_ENABLED:false}
   trustProxies: false
   keyPrefix: "ratelimit:"
   defaultTier: default

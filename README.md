@@ -125,6 +125,25 @@ curl -i http://localhost:8080/api/v1/sessions?userId=demo \\
 
 You will see one access log entry with that requestId.
 
+## Profiles
+
+- default: production-like settings reading environment variables.
+- dev: convenient defaults for local development (enable H2 if configured, verbose logging). Run with:
+  ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+
+## Production hardening checklist
+
+- Run behind TLS (terminate HTTPS at your ingress or gateway).
+- Rotate API keys regularly; prefer multiple keys via API_KEYS.
+- Adjust rate limiting (rate-limit.requests-per-minute, burst) to your traffic.
+- Set strict CORS allowed-origins for your frontend domains only.
+- Set request size limits (MAX_FILE_SIZE, MAX_REQUEST_SIZE, request.max-bytes) per your needs.
+- Configure persistent DB and Liquibase changelog; disable hibernate DDL (already disabled).
+- Set OPENAI_* variables if using AI endpoints; monitor readiness group includes openai.
+- Observe resilience: retries and circuit breaker are configured for AI calls.
+- Run the container as non-root (Dockerfile already does); set resource limits and replicas.
+- Expose actuator endpoints carefully (currently only health, info).
+
 ## Development
 
 Build & test:

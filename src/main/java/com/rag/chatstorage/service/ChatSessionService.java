@@ -2,6 +2,7 @@ package com.rag.chatstorage.service;
 
 import com.rag.chatstorage.domain.ChatMessage;
 import com.rag.chatstorage.domain.ChatSession;
+import com.rag.chatstorage.domain.User;
 import com.rag.chatstorage.repository.ChatMessageRepository;
 import com.rag.chatstorage.repository.ChatSessionRepository;
 import org.springframework.data.domain.Page;
@@ -17,10 +18,12 @@ public class ChatSessionService {
 
     private final ChatSessionRepository sessionRepository;
     private final ChatMessageRepository messageRepository;
+    private final UserService userService;
 
-    public ChatSessionService(ChatSessionRepository sessionRepository, ChatMessageRepository messageRepository) {
+    public ChatSessionService(ChatSessionRepository sessionRepository, ChatMessageRepository messageRepository, UserService userService) {
         this.sessionRepository = sessionRepository;
         this.messageRepository = messageRepository;
+        this.userService = userService;
     }
 
     public ChatSession getSessionOrThrow(Long id) {
@@ -28,19 +31,20 @@ public class ChatSessionService {
     }
 
     public ChatSession createSession(String userId, String title) {
+        User u = userService.ensureUser(userId);
         ChatSession s = new ChatSession();
-        s.setUserId(userId);
+        s.setUser(u);
         s.setTitle(title);
         return sessionRepository.save(s);
     }
 
     public List<ChatSession> listSessions(String userId) {
-        return sessionRepository.findByUserIdOrderByUpdatedAtDesc(userId);
+        return sessionRepository.findByUser_UserIdOrderByUpdatedAtDesc(userId);
     }
 
     public List<ChatSession> listSessions(String userId, Boolean favorite) {
         if (favorite == null) return listSessions(userId);
-        return sessionRepository.findByUserIdAndFavoriteOrderByUpdatedAtDesc(userId, favorite);
+        return sessionRepository.findByUser_UserIdAndFavoriteOrderByUpdatedAtDesc(userId, favorite);
     }
 
     public ChatSession rename(Long sessionId, String title) {

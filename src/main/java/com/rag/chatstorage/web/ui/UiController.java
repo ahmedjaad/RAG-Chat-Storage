@@ -67,7 +67,7 @@ public class UiController {
         // If userId is missing (e.g., malformed URL), derive it from the session
         if (userId == null || userId.isBlank()) {
             var s = service.getSessionOrThrow(id);
-            userId = s.getUserId();
+            userId = s.getUser().getUserId();
         }
         // Load current session and sidebar sessions for ChatGPT-like layout
         var current = SessionResponse.from(service.getSessionOrThrow(id));

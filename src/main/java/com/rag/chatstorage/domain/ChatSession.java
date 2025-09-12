@@ -13,8 +13,9 @@ public class ChatSession {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String userId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(nullable = false)
     private String title;
@@ -51,8 +52,8 @@ public class ChatSession {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }

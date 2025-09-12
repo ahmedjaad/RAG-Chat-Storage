@@ -40,7 +40,7 @@ public class SessionDtos {
             OffsetDateTime updatedAt
     ) {
         public static SessionResponse from(ChatSession s) {
-            return new SessionResponse(s.getId(), s.getUserId(), s.getTitle(), s.isFavorite(), s.getCreatedAt(), s.getUpdatedAt());
+            return new SessionResponse(s.getId(), s.getUser().getUserId(), s.getTitle(), s.isFavorite(), s.getCreatedAt(), s.getUpdatedAt());
         }
     }
 

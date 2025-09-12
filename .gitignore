@@ -1,5 +1,5 @@
 # Java and Maven
-/target/
+target/
 !.mvn/wrapper/maven-wrapper.jar
 pom.xml.tag
 pom.xml.releaseBackup

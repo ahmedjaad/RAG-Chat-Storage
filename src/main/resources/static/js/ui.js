@@ -45,6 +45,20 @@
   if (toast) {
     setTimeout(()=>{ toast.style.display = 'none'; }, 5000);
   }
+
+  // Mobile sidebar toggle
+  const sidebar = document.querySelector('.sidebar');
+  const menuBtn = document.getElementById('menuToggle');
+  if (menuBtn && sidebar) {
+    menuBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+    });
+    // Close sidebar when clicking a session link
+    document.querySelectorAll('.session-item a.title').forEach(a => a.addEventListener('click', ()=>{
+      sidebar.classList.remove('open');
+    }));
+  }
+
   // Populate userId suggestions from API
   try {
     fetch('/api/v1/users', { headers: { 'X-API-KEY': (window.UI_API_KEY||'') } })

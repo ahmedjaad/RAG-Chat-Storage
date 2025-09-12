@@ -51,6 +51,7 @@
     </aside>
     <main class="main">
         <div class="topbar">
+                    <button class="menu-btn" type="button" id="menuToggle" aria-label="Open menu">☰</button>
             <div th:if="${uiAiIssue}" id="ai-toast" aria-live="polite" style="position:absolute;left:16px;right:16px;top:60px;background:#1b1f2a;border:1px solid #3a4457;color:#e6e6e6;padding:8px 12px;border-radius:8px;z-index:3;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(0,0,0,.25)">
                 <span style="font-size:16px">⚠️</span>
                 <span th:text="${uiAiMsg}">The assistant couldn’t respond right now. Please try again.</span>

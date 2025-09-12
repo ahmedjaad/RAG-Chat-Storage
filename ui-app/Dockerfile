@@ -1,10 +1,27 @@
-# UI container
-FROM eclipse-temurin:21-jre
+# syntax=docker/dockerfile:1
 
+# ---------- Build stage ----------
+FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
-ARG JAR_FILE=target/ui-app-1.0-SNAPSHOT.jar
-COPY ${JAR_FILE} app.jar
+# Copy project definition first to leverage layer caching
+COPY pom.xml .
+
+# Pre-fetch dependencies (only re-run when pom.xml changes)
+RUN mvn -q -e -DskipTests dependency:go-offline
+
+# Now copy the actual source
+COPY src ./src
+
+# Package the application (tests skipped for faster image builds)
+RUN mvn -q -e -DskipTests package
+
+# ---------- Runtime stage ----------
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+
+# Copy the built jar from the build stage (matches spring-boot-maven-plugin output)
+COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8081
 ENTRYPOINT ["java","-jar","/app/app.jar"]

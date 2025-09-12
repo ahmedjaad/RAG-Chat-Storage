@@ -55,13 +55,6 @@ input,textarea,select{background:var(--panel);color:var(--text);border:1px solid
 .hr{height:1px;background:var(--border);margin:8px 0}
 .btn.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
 
-/* Compact segmented toggle for All/Favorites */
-.segmented{display:inline-flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--panel-2)}
-.segmented a{padding:4px 10px;font-size:12px;line-height:1.4;color:var(--text);text-decoration:none;border-right:1px solid var(--border)}
-.segmented a:last-child{border-right:0}
-.segmented a.active{background:rgba(16,163,127,0.12);color:#fff;box-shadow:0 0 0 1px var(--accent) inset}
-.segmented a:hover{background:rgba(255,255,255,0.04)}
-
 /* Breakpoints */
 /* lg ≥1200px: defaults are fine */
 

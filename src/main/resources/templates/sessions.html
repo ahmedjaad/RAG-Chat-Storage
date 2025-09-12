@@ -25,10 +25,10 @@
                 <button type="submit" class="icon-btn" title="New session" aria-label="New session">＋ New</button>
             </form>
             <div class="hr"></div>
-            <div class="segmented" role="tablist" aria-label="Filter sessions">
-                <a role="tab" aria-selected="true" th:attr="aria-selected=${favorite} != true" th:classappend=" ${favorite} == true ? '' : 'active'"
+            <div style="display:flex;gap:8px">
+                <a class="btn secondary" th:classappend=" ${favorite} == true ? '' : 'active'"
                    th:href="@{/ui/sessions(userId=${userId})}">All</a>
-                <a role="tab" th:attr="aria-selected=${favorite} == true" th:classappend=" ${favorite} == true ? 'active' : ''"
+                <a class="btn secondary" th:classappend=" ${favorite} == true ? 'active' : ''"
                    th:href="@{/ui/sessions(userId=${userId}, favorite=true)}">Favorites</a>
             </div>
         </div>

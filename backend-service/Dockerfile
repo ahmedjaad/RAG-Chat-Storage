@@ -7,10 +7,7 @@ WORKDIR /app
 # Copy project definition first to leverage layer caching
 COPY pom.xml .
 
-# Pre-fetch dependencies (only re-run when pom.xml changes)
-RUN mvn -q -e -DskipTests dependency:go-offline
-
-# Now copy the actual source
+# Copy the actual source
 COPY src ./src
 
 # Package the application (tests skipped for faster image builds)

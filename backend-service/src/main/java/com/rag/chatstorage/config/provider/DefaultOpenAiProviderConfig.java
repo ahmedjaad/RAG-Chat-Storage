@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Profile;
  * Active when none of the other provider profiles is selected.
  */
 @Configuration
-@Profile({"openai", "!anthropic & !ollama & !azure-openai & !openai-compatible"})
+@Profile("openai")
 public class DefaultOpenAiProviderConfig {
 
     @Bean

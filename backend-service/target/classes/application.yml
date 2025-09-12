@@ -1,4 +1,8 @@
 spring:
+  profiles:
+    default: ${SPRING_PROFILES_DEFAULT:dev}
+    group:
+      dev: openai
   datasource:
     url: ${DB_URL:jdbc:mysql://localhost:3306/rag_chat_storage}
     username: ${DB_USERNAME:root}

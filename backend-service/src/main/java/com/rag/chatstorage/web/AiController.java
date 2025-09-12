@@ -27,9 +27,10 @@ public class AiController {
     private final ChatClient chatClient;
     private final EmbeddingModel embeddingModel;
 
-    public AiController(ChatClient chatClient, EmbeddingModel embeddingModel) {
-        this.chatClient = chatClient;
-        this.embeddingModel = embeddingModel;
+    public AiController(org.springframework.beans.factory.ObjectProvider<ChatClient> chatClientProvider,
+                        org.springframework.beans.factory.ObjectProvider<EmbeddingModel> embeddingModelProvider) {
+        this.chatClient = chatClientProvider.getIfAvailable();
+        this.embeddingModel = embeddingModelProvider.getIfAvailable();
     }
 
     public record InferRequest(@NotBlank String prompt, String system) {}
@@ -61,6 +62,12 @@ public class AiController {
             }
     )
     public InferResponse infer(@RequestBody InferRequest request) {
+        if (chatClient == null) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    "No AI chat provider is configured. Enable a provider profile (e.g. openai, ollama)."
+            );
+        }
         var prompt = chatClient.prompt();
         if (request.system() != null && !request.system().isBlank()) {
             prompt = prompt.system(request.system());
@@ -100,6 +107,12 @@ public class AiController {
     public EmbeddingsResponse embeddings(@RequestBody EmbeddingsRequest request) {
         if (request.inputs() == null || request.inputs().isEmpty()) {
             throw new IllegalArgumentException("inputs must not be empty");
+        }
+        if (embeddingModel == null) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    "No AI embedding provider is configured. Enable a provider profile (e.g. openai, ollama)."
+            );
         }
         EmbeddingResponse resp = embeddingModel.embedForResponse(request.inputs());
         List<EmbeddingVector> vectors = resp.getResults().stream()

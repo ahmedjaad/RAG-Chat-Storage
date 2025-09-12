@@ -31,6 +31,12 @@ public class AiService {
     @Value("${spring.ai.openai.api-key:}")
     private String apiKey;
 
+    @org.springframework.beans.factory.annotation.Autowired
+        public AiService(org.springframework.beans.factory.ObjectProvider<ChatClient> chatClientProvider) {
+        this.chatClient = chatClientProvider.getIfAvailable();
+    }
+
+    // Backwards-compatible constructor for tests/wiring expecting direct ChatClient
     public AiService(ChatClient chatClient) {
         this.chatClient = chatClient;
     }
@@ -39,6 +45,13 @@ public class AiService {
     @CircuitBreaker(name = "ai", fallbackMethod = "fallback")
     public String infer(String system, String user) {
         try {
+            if (chatClient == null) {
+                throw new AiFriendlyException(
+                        "AI_NOT_CONFIGURED",
+                        "No AI chat provider is configured. Enable a provider profile (e.g. openai, ollama) or set necessary environment variables.",
+                        "Set SPRING_PROFILES_ACTIVE=openai and provide API keys, or use ollama profile."
+                );
+            }
             var prompt = chatClient.prompt();
             if (StringUtils.hasText(system)) {
                 prompt = prompt.system(system);

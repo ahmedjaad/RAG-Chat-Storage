@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@org.springframework.context.annotation.Profile({"openai", "!anthropic & !ollama & !azure-openai & !openai-compatible"})
 public class OpenAiModelDefaultsConfig {
 
     @Bean

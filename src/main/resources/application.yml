@@ -15,17 +15,6 @@ spring:
     serialization:
       write-dates-as-timestamps: false
   ai:
-    openai:
-      api-key: ${OPENAI_API_KEY:}
-      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
-      chat:
-        options:
-          model: ${OPENAI_CHAT_MODEL:gpt-4o-mini}
-          temperature: ${OPENAI_TEMPERATURE:0.2}
-          max-tokens: ${OPENAI_MAX_TOKENS:512}
-      embedding:
-        options:
-          model: ${OPENAI_EMBED_MODEL:text-embedding-3-small}
     retry:
       on-http-statuses: 429,500,502,503,504
     client:
@@ -52,7 +41,7 @@ management:
         liveness:
           include: livenessState
         readiness:
-          include: db,openai
+          include: db,ai
   endpoints:
     web:
       exposure:
@@ -61,7 +50,7 @@ management:
 resilience4j:
   retry:
     instances:
-      openai:
+      ai:
         max-attempts: 4
         wait-duration: 500ms
         enable-exponential-backoff: true
@@ -70,7 +59,7 @@ resilience4j:
         randomized-wait-factor: 0.5
   circuitbreaker:
     instances:
-      openai:
+      ai:
         failure-rate-threshold: 50
         slow-call-rate-threshold: 50
         slow-call-duration-threshold: 10s

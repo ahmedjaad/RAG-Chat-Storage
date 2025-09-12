@@ -35,13 +35,9 @@ public class AiService {
         this.chatClient = chatClient;
     }
 
-    @Retry(name = "openai", fallbackMethod = "fallback")
-    @CircuitBreaker(name = "openai", fallbackMethod = "fallback")
+    @Retry(name = "ai", fallbackMethod = "fallback")
+    @CircuitBreaker(name = "ai", fallbackMethod = "fallback")
     public String infer(String system, String user) {
-        if (!StringUtils.hasText(apiKey)) {
-            // Map to a friendly, non-technical message
-            throw new AiFriendlyException("CONFIG_MISSING", "AI is not configured. Please contact support.");
-        }
         try {
             var prompt = chatClient.prompt();
             if (StringUtils.hasText(system)) {

@@ -20,16 +20,7 @@ public class AiServiceTest {
     }
 
     @Test
-    void infer_throwsWhenApiKeyMissing() {
-        ReflectionTestUtils.setField(aiService, "apiKey", "");
-        assertThatThrownBy(() -> aiService.infer(null, "hello"))
-                .isInstanceOf(AiService.AiFriendlyException.class)
-                .hasMessageContaining("not configured");
-    }
-
-    @Test
     void infer_mapsGenericErrorToFriendly() {
-        ReflectionTestUtils.setField(aiService, "apiKey", "key");
         when(chatClient.prompt().user("hello").call().content()).thenThrow(new RuntimeException("500 Internal Server Error"));
 
         assertThatThrownBy(() -> aiService.infer(null, "hello"))
@@ -44,7 +35,6 @@ public class AiServiceTest {
 
     @Test
     void infer_mapsTimeoutToFriendly() {
-        ReflectionTestUtils.setField(aiService, "apiKey", "key");
         when(chatClient.prompt().user("hello").call().content()).thenThrow(new RuntimeException("Read timeout"));
 
         assertThatThrownBy(() -> aiService.infer(null, "hello"))
@@ -54,7 +44,6 @@ public class AiServiceTest {
 
     @Test
     void infer_mapsUnauthorizedToFriendly() {
-        ReflectionTestUtils.setField(aiService, "apiKey", "key");
         when(chatClient.prompt().user("hello").call().content()).thenThrow(new RuntimeException("401 Unauthorized - invalid api key"));
 
         assertThatThrownBy(() -> aiService.infer(null, "hello"))

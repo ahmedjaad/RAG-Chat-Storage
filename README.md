@@ -131,6 +131,24 @@ You will see one access log entry with that requestId.
 - dev: convenient defaults for local development (enable H2 if configured, verbose logging). Run with:
   ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 
+### AI Provider profiles (runtime switchable)
+
+The service can run against multiple LLM providers by selecting a Spring profile at runtime. If no profile is set, OpenAI is used by default.
+
+Supported profiles:
+- openai (default)
+- anthropic (Claude for chat; OpenAI for embeddings)
+- ollama (local models)
+- azure-openai
+- openai-compatible (e.g., DeepSeek, Mistral servers that speak OpenAI API)
+
+Select a provider at runtime:
+- Locally: ./mvnw spring-boot:run -Dspring-boot.run.profiles=anthropic
+- With env: SPRING_PROFILES_ACTIVE=ollama java -jar app.jar
+- Docker/K8s: set SPRING_PROFILES_ACTIVE in the container/pod env
+
+Readiness health includes the AI provider. If the provider is misconfigured/unreachable, readiness is DOWN.
+
 ## Production hardening checklist
 
 - Run behind TLS (terminate HTTPS at your ingress or gateway).
@@ -139,7 +157,7 @@ You will see one access log entry with that requestId.
 - Set strict CORS allowed-origins for your frontend domains only.
 - Set request size limits (MAX_FILE_SIZE, MAX_REQUEST_SIZE, request.max-bytes) per your needs.
 - Configure persistent DB and Liquibase changelog; disable hibernate DDL (already disabled).
-- Set OPENAI_* variables if using AI endpoints; monitor readiness group includes openai.
+- Set provider env vars if using AI endpoints; readiness group includes ai.
 - Observe resilience: retries and circuit breaker are configured for AI calls.
 - Run the container as non-root (Dockerfile already does); set resource limits and replicas.
 - Expose actuator endpoints carefully (currently only health, info).
@@ -166,13 +184,29 @@ cp .env.example .env   # first time only
 
 ## AI (Spring AI)
 
-This service integrates Spring AI for chat inference and embeddings using OpenAI-compatible models.
+This service integrates Spring AI for chat inference and embeddings using Spring AI abstractions (ChatClient, EmbeddingModel). Provider-specific setup is isolated to configuration classes and profile-specific properties.
 
-- Env vars:
-  - OPENAI_API_KEY – required
-  - OPENAI_BASE_URL – default https://api.openai.com (set to an OpenAI-compatible endpoint if needed)
-  - OPENAI_CHAT_MODEL – default gpt-4o-mini
-  - OPENAI_EMBED_MODEL – default text-embedding-3-small
+Profiles and env vars:
+- openai (default if no profile):
+  - OPENAI_API_KEY, OPENAI_BASE_URL (optional)
+  - OPENAI_CHAT_MODEL, OPENAI_EMBED_MODEL
+- anthropic:
+  - ANTHROPIC_API_KEY, ANTHROPIC_CHAT_MODEL
+  - For embeddings uses OpenAI vars above
+- ollama:
+  - OLLAMA_BASE_URL, OLLAMA_CHAT_MODEL, OLLAMA_EMBED_MODEL
+- azure-openai:
+  - AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT
+  - AZURE_OPENAI_CHAT_DEPLOYMENT, AZURE_OPENAI_EMBED_DEPLOYMENT
+- openai-compatible (e.g., DeepSeek):
+  - PROVIDER_API_KEY, PROVIDER_BASE_URL (and PROVIDER_*_MODEL)
+
+Examples:
+- Default OpenAI: SPRING_PROFILES_ACTIVE=openai OPENAI_API_KEY=sk-... ./mvnw spring-boot:run
+- Anthropic: SPRING_PROFILES_ACTIVE=anthropic ANTHROPIC_API_KEY=... OPENAI_API_KEY=... ./mvnw spring-boot:run
+- Ollama: SPRING_PROFILES_ACTIVE=ollama OLLAMA_BASE_URL=http://localhost:11434 ./mvnw spring-boot:run
+- Azure: SPRING_PROFILES_ACTIVE=azure-openai AZURE_OPENAI_API_KEY=... AZURE_OPENAI_ENDPOINT=... ./mvnw spring-boot:run
+- OpenAI-compatible: SPRING_PROFILES_ACTIVE=openai-compatible PROVIDER_API_KEY=... PROVIDER_BASE_URL=... ./mvnw spring-boot:run
 
 ### Endpoints
 - POST /api/v1/ai/infer

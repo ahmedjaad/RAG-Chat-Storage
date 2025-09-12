@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Sessions</title>
+    <link rel="stylesheet" th:href="@{/css/chat.css}">
+</head>
+<body>
+<div>
+    <h1>Sessions for <span th:text="${userId}"></span></h1>
+    <form th:action="@{/ui/sessions}" method="post">
+        <input type="hidden" name="userId" th:value="${userId}"/>
+        <input type="text" name="title" placeholder="New session title"/>
+        <button type="submit">Create</button>
+    </form>
+    <ul>
+        <li th:each="s : ${sessions}">
+            <a th:href="@{'/ui/sessions/' + ${s.id} + '?userId=' + ${userId}}" th:text="${s.title}"></a>
+        </li>
+    </ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+server:
+  port: ${UI_PORT:8081}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+backend:
+  base-url: ${BACKEND_BASE_URL:http://localhost:8080}
+  api-key: ${API_KEY:changeme}

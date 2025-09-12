@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>RAG Chat Storage - Sessions</title>
+    <link rel="stylesheet" th:href="@{/css/chat.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <div class="header" style="flex-direction:column;align-items:flex-start;gap:10px">
+            <div class="brand">RAG Chat Storage</div>
+            <form method="get" th:action="@{/ui/sessions}" style="display:flex;gap:6px;align-items:center;width:100%">
+                <input type="text" name="userId" id="userIdInput" th:placeholder="${userId}" style="flex:1" list="userIdSuggestions" autocomplete="off" />
+                <datalist id="userIdSuggestions"></datalist>
+                <button class="secondary" type="submit" title="Switch user">Switch</button>
+            </form>
+            <span class="badge" th:text="${userId}">user</span>
+        </div>
+        <div class="new-session">
+            <form method="post" th:action="@{/ui/sessions}" style="display:flex;gap:8px;width:100%;align-items:center">
+                <input type="hidden" name="userId" th:value="${userId}">
+                <button type="submit" class="icon-btn" title="New session" aria-label="New session">＋ New</button>
+            </form>
+            <div class="hr"></div>
+            <div style="display:flex;gap:8px">
+                <a class="btn secondary" th:classappend=" ${favorite} == true ? '' : 'active'"
+                   th:href="@{/ui/sessions(userId=${userId})}">All</a>
+                <a class="btn secondary" th:classappend=" ${favorite} == true ? 'active' : ''"
+                   th:href="@{/ui/sessions(userId=${userId}, favorite=true)}">Favorites</a>
+            </div>
+        </div>
+        <div class="sessions">
+            <div th:each="s : ${sessions}" class="session-item">
+                <a class="title" th:text="${s.title}" th:href="@{/ui/sessions/{id}(id=${s.id}, userId=${userId})}">Session</a>
+                <div class="session-actions">
+                    <form method="post" th:action="@{'/ui/sessions/' + ${s.id} + '/favorite'}" style="display:inline">
+                        <input type="hidden" name="userId" th:value="${userId}">
+                        <input type="hidden" name="favorite" th:value="${!s.favorite}">
+                        <button class="icon-btn" type="submit" th:title="${s.favorite} ? 'Unfavorite' : 'Favorite'" aria-label="Favorite toggle" th:text="${s.favorite} ? '⭐' : '☆'"></button>
+                    </form>
+                    <button class="icon-btn rename-toggle" type="button" title="Rename" aria-label="Rename" th:attr="data-id=${s.id}">✎</button>
+                    <form method="post" th:action="@{'/ui/sessions/' + ${s.id} + '/delete'}" data-confirm="Delete session?" style="display:inline">
+                        <input type="hidden" name="userId" th:value="${userId}">
+                        <button class="icon-btn danger" type="submit" title="Delete" aria-label="Delete">🗑</button>
+                    </form>
+                </div>
+                <form class="rename-form" method="post" th:action="@{'/ui/sessions/' + ${s.id} + '/title'}" style="display:none;gap:6px;margin-top:6px">
+                    <input type="hidden" name="userId" th:value="${userId}">
+                    <input type="text" name="title" th:placeholder="${s.title}" th:value="${s.title}" style="flex:1" />
+                    <button class="icon-btn secondary" type="submit" title="Save" aria-label="Save">✔</button>
+                    <button class="icon-btn secondary rename-cancel" type="button" title="Cancel" aria-label="Cancel">✖</button>
+                </form>
+            </div>
+        </div>
+    </aside>
+    <main class="main">
+        <div class="topbar">
+                    <button class="menu-btn" type="button" id="menuToggle" aria-label="Open menu">☰</button>
+            <div class="title">Sessions</div>
+            <div class="utilities">
+                <a th:href="@{/ui/docs(userId=${userId})}" class="btn secondary">Docs</a>
+            </div>
+        </div>
+        <div class="chat">
+            <!-- Blank chat area with composer to start a new session like ChatGPT -->
+            <div style="margin:auto;max-width:820px;width:100%">
+                <div style="text-align:center;color:var(--muted);margin-bottom:12px">Start a new conversation</div>
+                <div class="composer">
+                    <div class="wrap">
+                        <form method="post" th:action="@{/ui/compose}" style="display:flex;gap:8px;flex:1">
+                            <input type="hidden" name="userId" th:value="${userId}">
+                            <textarea name="content" rows="2" placeholder="Message..." required></textarea>
+                            <div class="send">
+                                <button type="submit">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/js/ui.js}"></script>
+</body>
+</html>

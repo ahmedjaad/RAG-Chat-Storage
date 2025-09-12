@@ -1,0 +1,17 @@
+spring:
+  ai:
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      chat:
+        options:
+          model: ${OLLAMA_CHAT_MODEL:llama3.1}
+          temperature: ${OLLAMA_TEMPERATURE:0.2}
+          max-tokens: ${OLLAMA_MAX_TOKENS:512}
+      embedding:
+        options:
+          model: ${OLLAMA_EMBED_MODEL:nomic-embed-text}
+    client:
+      connect-timeout: 10s
+      read-timeout: 10s
+    retry:
+      on-http-statuses: 429,500,502,503,504

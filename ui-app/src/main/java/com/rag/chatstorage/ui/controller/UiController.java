@@ -29,18 +29,18 @@ public class UiController {
     public String listSessions(@RequestParam(required = false) String userId,
                                @RequestParam(required = false) Boolean favorite,
                                Model model) {
-        if (userId == null || userId.isBlank()) userId = "demo";
+        String effectiveUserId = (userId == null || userId.isBlank()) ? "demo" : userId;
         // Ensure user
         backend.post().uri("/api/v1/users")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(Map.of("userId", userId))
+                .bodyValue(Map.of("userId", effectiveUserId))
                 .retrieve().toBodilessEntity().block();
         var sessions = backend.get().uri(uriBuilder -> uriBuilder.path("/api/v1/sessions")
-                        .queryParam("userId", userId)
+                        .queryParam("userId", effectiveUserId)
                         .queryParamIfPresent("favorite", java.util.Optional.ofNullable(favorite))
                         .build())
                 .retrieve().bodyToMono(List.class).block();
-        model.addAttribute("userId", userId);
+        model.addAttribute("userId", effectiveUserId);
         model.addAttribute("favorite", favorite);
         model.addAttribute("sessions", sessions);
         return "sessions";
@@ -62,15 +62,17 @@ public class UiController {
                        @RequestParam(defaultValue = "0") int page,
                        @RequestParam(defaultValue = "20") int size,
                        Model model) {
-        if (userId == null || userId.isBlank()) {
+        String effectiveUserId2 = userId;
+        if (effectiveUserId2 == null || effectiveUserId2.isBlank()) {
             var s = backend.get().uri("/api/v1/sessions/{id}", id)
                     .retrieve().bodyToMono(Map.class).block();
-            userId = (String) ((Map<?,?>) s.get("user")).get("userId");
+            effectiveUserId2 = (String) ((Map<?,?>) s.get("user")).get("userId");
         }
         var current = backend.get().uri("/api/v1/sessions/{id}", id)
                 .retrieve().bodyToMono(Map.class).block();
+        final String finalUserId = effectiveUserId2;
         var sessions = backend.get().uri(uriBuilder -> uriBuilder.path("/api/v1/sessions")
-                        .queryParam("userId", userId)
+                        .queryParam("userId", finalUserId)
                         .build())
                 .retrieve().bodyToMono(List.class).block();
         var messagesPage = backend.get().uri(uriBuilder -> uriBuilder.path("/api/v1/sessions/{id}/messages")
@@ -78,7 +80,7 @@ public class UiController {
                 .retrieve().bodyToMono(Map.class).block();
         model.addAttribute("sessions", sessions);
         model.addAttribute("current", current);
-        model.addAttribute("userId", userId);
+        model.addAttribute("userId", finalUserId);
         model.addAttribute("sessionId", id);
         model.addAttribute("messages", messagesPage);
         return "session";

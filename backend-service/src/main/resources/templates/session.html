@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>RAG Chat Storage - Chat</title>
+    <link rel="stylesheet" th:href="@{/css/chat.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <div class="header" style="flex-direction:column;align-items:flex-start;gap:10px">
+            <div class="brand">RAG Chat Storage</div>
+            <form method="get" th:action="@{/ui/sessions}" style="display:flex;gap:6px;align-items:center;width:100%">
+                <input type="text" name="userId" id="userIdInput" th:placeholder="${userId}" style="flex:1" list="userIdSuggestions" autocomplete="off" />
+                <datalist id="userIdSuggestions"></datalist>
+                <button class="secondary" type="submit" title="Switch user">Switch</button>
+            </form>
+            <span class="badge" th:text="${userId}">user</span>
+        </div>
+        <div class="new-session">
+            <form method="post" th:action="@{/ui/sessions}" style="display:flex;gap:8px;width:100%;align-items:center">
+                <input type="hidden" name="userId" th:value="${userId}">
+                <button type="submit" class="icon-btn" title="New session" aria-label="New session">＋ New</button>
+            </form>
+        </div>
+        <div class="sessions">
+            <div th:each="s : ${sessions}" class="session-item">
+                <a class="title" th:text="${s.title}" th:href="@{/ui/sessions/{id}(id=${s.id}, userId=${userId})}">Session</a>
+                <div class="session-actions">
+                    <form method="post" th:action="@{'/ui/sessions/' + ${s.id} + '/favorite'}" style="display:inline">
+                        <input type="hidden" name="userId" th:value="${userId}">
+                        <input type="hidden" name="favorite" th:value="${!s.favorite}">
+                        <button class="icon-btn" type="submit" th:title="${s.favorite} ? 'Unfavorite' : 'Favorite'" aria-label="Favorite toggle" th:text="${s.favorite} ? '⭐' : '☆'"></button>
+                    </form>
+                    <button class="icon-btn rename-toggle" type="button" title="Rename" aria-label="Rename" th:attr="data-id=${s.id}">✎</button>
+                    <form method="post" th:action="@{'/ui/sessions/' + ${s.id} + '/delete'}" data-confirm="Delete session?" style="display:inline">
+                        <input type="hidden" name="userId" th:value="${userId}">
+                        <button class="icon-btn danger" type="submit" title="Delete" aria-label="Delete">🗑</button>
+                    </form>
+                </div>
+                <form class="rename-form" method="post" th:action="@{'/ui/sessions/' + ${s.id} + '/title'}" style="display:none;gap:6px;margin-top:6px">
+                    <input type="hidden" name="userId" th:value="${userId}">
+                    <input type="text" name="title" th:placeholder="${s.title}" th:value="${s.title}" style="flex:1" />
+                    <button class="icon-btn secondary" type="submit" title="Save" aria-label="Save">✔</button>
+                    <button class="icon-btn secondary rename-cancel" type="button" title="Cancel" aria-label="Cancel">✖</button>
+                </form>
+            </div>
+        </div>
+    </aside>
+    <main class="main">
+        <div class="topbar">
+                    <button class="menu-btn" type="button" id="menuToggle" aria-label="Open menu">☰</button>
+            <div th:if="${uiAiIssue}" id="ai-toast" aria-live="polite" style="position:absolute;left:16px;right:16px;top:60px;background:#1b1f2a;border:1px solid #3a4457;color:#e6e6e6;padding:8px 12px;border-radius:8px;z-index:3;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(0,0,0,.25)">
+                <span style="font-size:16px">⚠️</span>
+                <span th:text="${uiAiMsg}">The assistant couldn’t respond right now. Please try again.</span>
+                <span th:if="${uiAiHint}" style="color:var(--muted);margin-left:8px" th:text="${uiAiHint}">(hint)</span>
+            </div>
+            <div class="title">
+                <div style="display:flex;flex-direction:column;gap:6px">
+                    <div>
+                        <span th:text="${current != null ? current.title : ('Session ' + sessionId)}">Session</span>
+                        <span th:if="${current != null && current.favorite}" title="Favorite" style="margin-left:8px">⭐</span>
+                    </div>
+                    <!-- Controls moved to sidebar per requirement; keeping title display here only -->
+                </div>
+            </div>
+            <div class="utilities">
+                <a th:href="@{/ui/docs(userId=${userId})}" class="btn secondary">Docs</a>
+            </div>
+        </div>
+        <div class="chat">
+            <div th:each="m : ${messages.items}" th:classappend=" ${m.sender.name().toLowerCase()}" class="msg">
+                <div class="bubble" th:classappend=" ${m.sender.name().toLowerCase()}">
+                    <div class="sender">
+                        <span th:text="${m.sender}">USER</span>
+                        <span class="time" th:text="${#temporals.format(m.createdAt, 'HH:mm')}">00:00</span>
+                    </div>
+                    <div th:text="${m.content}"></div>
+                    <pre class="context" th:if="${m.context}" th:text="${m.context}"></pre>
+                </div>
+            </div>
+        </div>
+        <div class="composer">
+            <div class="wrap">
+                <form method="post" th:action="@{'/ui/sessions/' + ${sessionId} + '/messages'}" style="display:flex;gap:8px;flex:1">
+                    <input type="hidden" name="userId" th:value="${userId}">
+                    <input type="hidden" name="sender" value="USER" />
+                    <textarea name="content" rows="2" placeholder="Message..." required></textarea>
+                    <div class="send">
+                        <button type="submit">Send</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/js/ui.js}"></script>
+</body>
+</html>

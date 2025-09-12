@@ -30,7 +30,8 @@ services:
 
   backend:
     container_name: rag-backend
-    build: .
+    build:
+      context: ./backend-service
     depends_on:
       - mysql
     env_file:

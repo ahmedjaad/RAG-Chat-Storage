@@ -1,0 +1,89 @@
+/* ChatGPT-like dark theme UI for /ui */
+:root{
+  --bg:#0f1115;--panel:#151821;--panel-2:#1b1f2a;--text:#e6e6e6;--muted:#9aa4b2;--accent:#10a37f;--danger:#ef4444;--border:#232938;--bubble-user:#1e293b;--bubble-assistant:#111827;--shadow:rgba(0,0,0,.3)
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+button,.btn{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:8px 12px;cursor:pointer;transition:.15s}
+button.secondary{background:transparent;border:1px solid var(--border);color:var(--text)}
+button.danger{background:var(--danger)}
+input,textarea,select{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px}
+
+/* Layout */
+.app{display:grid;grid-template-columns:280px 1fr;height:100vh}
+.sidebar{background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column}
+.sidebar .header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+/* add subtle spacing below brand when stacked */
+.sidebar .header .brand{margin-bottom:2px}
+.brand{font-weight:700}
+
+.sidebar .new-session{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px}
+.sidebar .sessions{overflow:auto;padding:8px}
+.session-item{display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;border:1px solid transparent}
+.session-item:hover{background:var(--panel-2);border-color:var(--border)}
+.session-item .title{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.session-item .meta{color:var(--muted);font-size:12px}
+.session-actions{display:flex;gap:6px;margin-top:6px}
+.icon-btn{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:4px 8px;cursor:pointer;line-height:1}
+.icon-btn:hover{border-color:var(--accent);color:#fff;background:rgba(16,163,127,0.08)}
+.icon-btn.danger:hover{border-color:var(--danger);background:rgba(239,68,68,0.08)}
+
+.main{display:flex;flex-direction:column;height:100vh}
+.topbar{height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--border);background:var(--panel);position:sticky;top:0;z-index:3}
+.topbar .title{font-weight:600;display:flex;align-items:center;gap:8px}
+.topbar .menu-btn{display:none;background:transparent;border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:8px}
+
+.chat{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.msg{display:flex;gap:10px;align-items:flex-start}
+.msg .bubble{max-width:900px;padding:12px 14px;border-radius:14px;box-shadow:0 2px 8px var(--shadow);border:1px solid var(--border)}
+.msg.user .bubble{background:var(--bubble-user)}
+.msg.assistant .bubble{background:var(--bubble-assistant)}
+.msg .sender{font-size:12px;color:var(--muted);margin-bottom:6px}
+.msg .context{margin-top:8px;background:#0d1220;border:1px solid var(--border);border-radius:8px;padding:8px;white-space:pre-wrap;color:#cbd5e1}
+.time{color:var(--muted);font-size:11px;margin-left:6px}
+
+.composer{border-top:1px solid var(--border);padding:12px;background:linear-gradient(180deg, rgba(21,24,33,0.8), var(--panel));position:sticky;bottom:0}
+.composer .wrap{display:flex;gap:8px;align-items:flex-end;max-width:980px;margin:0 auto}
+.composer textarea{flex:1;min-height:48px;max-height:200px;resize:vertical;padding:12px;background:var(--panel-2)}
+.composer .send{display:flex;gap:8px}
+
+.utilities{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.badge{background:#0a0f1d;border:1px solid var(--border);color:var(--muted);padding:2px 6px;border-radius:999px;font-size:11px}
+.hr{height:1px;background:var(--border);margin:8px 0}
+.btn.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+
+/* Breakpoints */
+/* lg ≥1200px: defaults are fine */
+
+/* md ≤992px: slightly narrower sidebar and smaller max bubble width */
+@media (max-width: 992px){
+  .app{grid-template-columns:240px 1fr}
+  .msg .bubble{max-width:720px}
+}
+
+/* sm ≤768px: off-canvas sidebar, show menu button, tighter paddings */
+@media (max-width: 768px){
+  .app{grid-template-columns:1fr}
+  .topbar .menu-btn{display:inline-flex}
+  .sidebar{position:fixed;top:0;bottom:0;left:0;width:80%;max-width:320px;transform:translateX(-100%);transition:transform .2s ease;z-index:4;box-shadow:0 8px 24px var(--shadow)}
+  .sidebar.open{transform:translateX(0)}
+  .sidebar .header{padding:12px}
+  .sidebar .new-session{padding:10px 12px}
+  .sidebar .sessions{padding:6px}
+  .chat{padding:12px}
+  .composer .wrap{margin:0 8px}
+  .composer textarea{min-height:44px;padding:10px}
+  .msg .bubble{max-width:95%}
+}
+
+/* xs ≤576px: compact text and buttons */
+@media (max-width: 576px){
+  body{font-size:13px}
+  .topbar{height:48px;padding:0 12px}
+  .topbar .title{font-size:14px}
+  button,.btn{padding:6px 10px}
+  input,textarea,select{padding:6px}
+}

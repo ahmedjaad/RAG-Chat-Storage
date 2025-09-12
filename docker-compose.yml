@@ -26,17 +26,31 @@ services:
       mysql:
         condition: service_healthy
     ports:
-      - "8081:8080"
+      - "8082:8080"
 
-  app:
-    container_name: rag-app
+  backend:
+    container_name: rag-backend
     build: .
     depends_on:
       - mysql
     env_file:
       - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-openai}
     ports:
       - "8080:8080"
+
+  ui:
+    container_name: rag-ui
+    build:
+      context: ./ui-app
+    environment:
+      BACKEND_BASE_URL: http://backend:8080
+      API_KEY: ${API_KEY:-changeme}
+    ports:
+      - "8081:8081"
+    depends_on:
+      - backend
 
 volumes:
   mysql_data:

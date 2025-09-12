@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@org.springframework.context.annotation.Profile("ui-embedded")
 @Controller
 @RequestMapping("/ui")
 public class UiController {

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Session</title>
+    <link rel="stylesheet" th:href="@{/css/chat.css}">
+</head>
+<body>
+<div>
+    <a th:href="@{'/ui/sessions?userId=' + ${userId}}">Back</a>
+    <h2 th:text="${current.title}"></h2>
+    <div>
+        <div th:each="m : ${messages.content}">
+            <div><strong th:text="${m.sender}"></strong>: <span th:text="${m.content}"></span></div>
+        </div>
+    </div>
+    <form th:action="@{'/ui/sessions/' + ${sessionId} + '/messages'}" method="post">
+        <input type="hidden" name="userId" th:value="${userId}"/>
+        <input type="hidden" name="sender" value="USER"/>
+        <textarea name="content" placeholder="Type a message..."></textarea>
+        <button type="submit">Send</button>
+    </form>
+</div>
+</body>
+</html>

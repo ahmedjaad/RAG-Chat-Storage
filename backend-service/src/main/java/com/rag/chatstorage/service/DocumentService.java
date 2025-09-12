@@ -15,9 +15,34 @@ public class DocumentService {
     private final DocumentRepository repo;
     private final EmbeddingModel embeddingModel;
 
-    public DocumentService(DocumentRepository repo, EmbeddingModel embeddingModel) {
+    public DocumentService(DocumentRepository repo, org.springframework.beans.factory.ObjectProvider<EmbeddingModel> embeddingModelProvider,
+                           org.springframework.core.env.Environment env) {
         this.repo = repo;
-        this.embeddingModel = embeddingModel;
+        this.embeddingModel = chooseEmbeddingModel(embeddingModelProvider, env);
+    }
+
+    private EmbeddingModel chooseEmbeddingModel(org.springframework.beans.factory.ObjectProvider<EmbeddingModel> provider,
+                                                org.springframework.core.env.Environment env) {
+        // If only one bean, return it
+        List<EmbeddingModel> all = provider.stream().toList();
+        if (all.isEmpty()) return null;
+        if (all.size() == 1) return all.getFirst();
+        // Prefer by active profile
+        List<String> profiles = Arrays.asList(env.getActiveProfiles());
+        // Priority order depending on common profiles
+        if (profiles.contains("openai") || profiles.contains("openai-compatible")) {
+            for (EmbeddingModel m : all) if (m.getClass().getName().toLowerCase().contains("openai")) return m;
+        }
+        if (profiles.contains("ollama")) {
+            for (EmbeddingModel m : all) if (m.getClass().getName().toLowerCase().contains("ollama")) return m;
+        }
+        if (profiles.contains("azure-openai")) {
+            for (EmbeddingModel m : all) if (m.getClass().getName().toLowerCase().contains("openai")) return m;
+        }
+        // Fallback priority: OpenAI > Ollama > Azure-openai naming
+        for (EmbeddingModel m : all) if (m.getClass().getName().toLowerCase().contains("openai")) return m;
+        for (EmbeddingModel m : all) if (m.getClass().getName().toLowerCase().contains("ollama")) return m;
+        return all.getFirst();
     }
 
     public record UpsertRequest(String userId, String text, String metadata) {}
@@ -29,6 +54,9 @@ public class DocumentService {
     public UpsertResponse upsert(UpsertRequest req) {
         if (req == null || req.text() == null || req.text().isBlank()) {
             throw new IllegalArgumentException("text must not be empty");
+        }
+        if (embeddingModel == null) {
+            throw new IllegalStateException("No AI embedding provider is configured. Enable a provider profile (e.g. openai, ollama).");
         }
         String userId = (req.userId() == null || req.userId().isBlank()) ? "public" : req.userId();
         EmbeddingResponse er = embeddingModel.embedForResponse(List.of(req.text()));
@@ -42,6 +70,9 @@ public class DocumentService {
 
     public List<SearchMatch> search(String query, String userId, int topK) {
         if (query == null || query.isBlank()) throw new IllegalArgumentException("query must not be empty");
+        if (embeddingModel == null) {
+            throw new IllegalStateException("No AI embedding provider is configured. Enable a provider profile (e.g. openai, ollama).");
+        }
         if (topK <= 0) topK = 5;
         EmbeddingResponse er = embeddingModel.embedForResponse(List.of(query));
         float[] q = er.getResults().getFirst().getOutput();

@@ -76,11 +76,25 @@ public class RateLimitFilter extends OncePerRequestFilter {
         BucketConfiguration config = toBucketConfig(policy.getBandwidths());
         byte[] key = buildKey(props.getKeyPrefix(), tier, subject, method, normalizePath(path)).getBytes(StandardCharsets.UTF_8);
         ConsumptionProbe probe;
-        try {
-            BucketProxy bucket = proxyManager.builder().build(key, config);
-            probe = bucket.tryConsumeAndReturnRemaining(cost);
-        } catch (Exception ex) {
-            // Fallback to local in-memory bucket with stricter limits
+        if (proxyAvailable()) {
+            try {
+                BucketProxy bucket = proxyManager.builder().build(key, config);
+                probe = bucket.tryConsumeAndReturnRemaining(cost);
+            } catch (Exception ex) {
+                // Fallback to local in-memory bucket with stricter limits
+                String localKey = new String(key, StandardCharsets.UTF_8);
+                io.github.bucket4j.Bucket local = localBuckets.computeIfAbsent(localKey, k -> {
+                    io.github.bucket4j.local.LocalBucketBuilder lb = io.github.bucket4j.Bucket.builder();
+                    for (io.github.bucket4j.Bandwidth bw : adjustForFallback(policy.getBandwidths())) {
+                        lb.addLimit(bw);
+                    }
+                    return lb.build();
+                });
+                probe = local.tryConsumeAndReturnRemaining(cost);
+                log.warn("Redis unavailable, using local fallback rate limiter: {}", ex.toString());
+            }
+        } else {
+            // No proxy manager configured; use local bucket without exceptions
             String localKey = new String(key, StandardCharsets.UTF_8);
             io.github.bucket4j.Bucket local = localBuckets.computeIfAbsent(localKey, k -> {
                 io.github.bucket4j.local.LocalBucketBuilder lb = io.github.bucket4j.Bucket.builder();
@@ -90,7 +104,6 @@ public class RateLimitFilter extends OncePerRequestFilter {
                 return lb.build();
             });
             probe = local.tryConsumeAndReturnRemaining(cost);
-            log.warn("Redis unavailable, using local fallback rate limiter: {}", ex.toString());
         }
         addHeaders(response, policy, probe, cost);
         recordMetrics(method, path, tier, probe.isConsumed());
@@ -119,7 +132,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private String sanitize(String s) { return s.replaceAll("[^a-zA-Z0-9:_-]", "?"); }
+    private String sanitize(String s) { return s == null ? "unknown" : s.replaceAll("[^a-zA-Z0-9:_-]", "?"); }
 
     private void addHeaders(HttpServletResponse response, RateLimitProperties.Policy policy, ConsumptionProbe probe, int cost) {
         // RateLimit-Limit: send per bandwidth values

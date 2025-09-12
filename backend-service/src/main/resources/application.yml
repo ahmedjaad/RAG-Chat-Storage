@@ -1,8 +1,6 @@
 spring:
   profiles:
     default: ${SPRING_PROFILES_DEFAULT:dev}
-    group:
-      dev: openai
   datasource:
     url: ${DB_URL:jdbc:mysql://localhost:3306/rag_chat_storage}
     username: ${DB_USERNAME:root}
@@ -99,6 +97,7 @@ ratelimit:
   ssl: ${REDIS_SSL:false}
   database: ${REDIS_DATABASE:0}
   keyTtlSeconds: 172800
+  failOnRedisUnavailable: ${RATELIMIT_FAIL_ON_REDIS_UNAVAILABLE:false}
   whitelistPaths:
     - "/"
     - "/docs"

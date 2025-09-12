@@ -104,4 +104,9 @@ public class RateLimitProperties {
     public void setPolicies(List<Policy> policies) { this.policies = policies; }
     public double getFallbackFactor() { return fallbackFactor; }
     public void setFallbackFactor(double fallbackFactor) { this.fallbackFactor = fallbackFactor; }
+
+    // When redisEnabled=true, if Redis is unavailable at startup, skip distributed manager instead of failing
+    private boolean failOnRedisUnavailable = false;
+    public boolean isFailOnRedisUnavailable() { return failOnRedisUnavailable; }
+    public void setFailOnRedisUnavailable(boolean failOnRedisUnavailable) { this.failOnRedisUnavailable = failOnRedisUnavailable; }
 }

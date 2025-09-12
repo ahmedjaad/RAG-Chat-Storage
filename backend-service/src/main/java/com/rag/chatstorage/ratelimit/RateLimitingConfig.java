@@ -35,16 +35,30 @@ public class RateLimitingConfig {
     }
 
     @Bean
-    public ProxyManager<byte[]> proxyManager(LettuceConnectionFactory factory, RateLimitProperties props) {
-        @SuppressWarnings("unchecked")
-        StatefulRedisConnection<byte[], byte[]> nativeConn = (StatefulRedisConnection<byte[], byte[]>) factory.getConnection().getNativeConnection();
-        return LettuceBasedProxyManager
-            .builderFor(nativeConn)
-            .withExpirationStrategy(
-                ExpirationAfterWriteStrategy.basedOnTimeForRefillingBucketUpToMax(
-                    Duration.ofSeconds(props.getKeyTtlSeconds())
+    public ProxyManager<byte[]> proxyManager(RedisConnectionFactory factory, RateLimitProperties props) {
+        // Ensure we only proceed if the underlying factory is Lettuce-based
+        if (!(factory instanceof LettuceConnectionFactory lettuceFactory)) {
+            throw new IllegalStateException("RedisConnectionFactory is not LettuceConnectionFactory. Please configure lettuce if RATELIMIT_REDIS_ENABLED=true");
+        }
+        try {
+            @SuppressWarnings("unchecked")
+            StatefulRedisConnection<byte[], byte[]> nativeConn = (StatefulRedisConnection<byte[], byte[]>) lettuceFactory.getConnection().getNativeConnection();
+            return LettuceBasedProxyManager
+                .builderFor(nativeConn)
+                .withExpirationStrategy(
+                    ExpirationAfterWriteStrategy.basedOnTimeForRefillingBucketUpToMax(
+                        Duration.ofSeconds(props.getKeyTtlSeconds())
+                    )
                 )
-            )
-            .build();
+                .build();
+        } catch (Exception ex) {
+            if (props.isFailOnRedisUnavailable()) {
+                log.error("Redis connection failed and failOnRedisUnavailable=true. Failing startup.", ex);
+                throw ex instanceof RuntimeException re ? re : new RuntimeException(ex);
+            }
+            log.warn("Redis is unavailable at startup; distributed rate limiting will be disabled. Falling back to local buckets.");
+            // Returning null from a @Bean method tells Spring not to register this bean.
+            return null;
+        }
     }
 }

@@ -30,7 +30,15 @@
     btn.addEventListener('click', function(){
       const item = btn.closest('.session-item');
       const form = item ? item.querySelector('.rename-form') : null;
-      if (form) form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'flex' : 'none';
+      if (!form) return;
+      const showing = (form.style.display === 'none' || form.style.display === '') ? false : true;
+      if (showing) {
+        form.style.display = 'none';
+      } else {
+        form.style.display = 'flex';
+        const input = form.querySelector('input[name="title"]');
+        if (input) { input.focus(); input.select(); }
+      }
     });
   });
   document.querySelectorAll('.rename-cancel').forEach(btn => {

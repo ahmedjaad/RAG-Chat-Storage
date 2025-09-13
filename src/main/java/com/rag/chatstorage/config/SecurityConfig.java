@@ -49,6 +49,7 @@ public class SecurityConfig {
                 // Allow health, docs, swagger-ui, and simple UI without API key for convenience (can be changed)
                 if ("/".equals(path)
                         || path.startsWith("/actuator/health")
+                        || path.startsWith("/h2-console")
                         || path.startsWith("/v3/api-docs")
                         || path.startsWith("/swagger-ui")
                         || path.equals("/docs")

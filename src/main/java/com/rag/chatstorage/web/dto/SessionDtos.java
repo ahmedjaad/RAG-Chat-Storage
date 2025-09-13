@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.List;
 
 public class SessionDtos {
@@ -37,8 +37,8 @@ public class SessionDtos {
             String userId,
             String title,
             boolean favorite,
-            OffsetDateTime createdAt,
-            OffsetDateTime updatedAt
+            Instant createdAt,
+            Instant updatedAt
     ) {
         public static SessionResponse from(ChatSession s) {
             return new SessionResponse(s.getId(), s.getUser().getUserId(), s.getTitle(), s.isFavorite(), s.getCreatedAt(), s.getUpdatedAt());
@@ -51,7 +51,7 @@ public class SessionDtos {
             ChatMessage.Sender sender,
             String content,
             String context,
-            OffsetDateTime createdAt
+            Instant createdAt
     ) {
         public static MessageResponse from(ChatMessage m) {
             return new MessageResponse(m.getId(), m.getSession().getId(), m.getSender(), m.getContent(), m.getContext(), m.getCreatedAt());

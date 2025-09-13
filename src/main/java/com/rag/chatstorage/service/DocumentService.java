@@ -4,6 +4,8 @@ import com.rag.chatstorage.domain.Document;
 import com.rag.chatstorage.repository.DocumentRepository;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.embedding.EmbeddingResponse;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,30 +15,33 @@ import java.util.*;
 public class DocumentService {
 
     private final DocumentRepository repo;
-    private final EmbeddingModel embeddingModel;
+    private final ObjectProvider<EmbeddingModel> embeddingModelProvider;
+    private final Environment env;
 
-    public DocumentService(DocumentRepository repo, org.springframework.beans.factory.ObjectProvider<EmbeddingModel> embeddingModelProvider,
-                           org.springframework.core.env.Environment env) {
+    public DocumentService(DocumentRepository repo, ObjectProvider<EmbeddingModel> embeddingModelProvider,
+                           Environment env) {
         this.repo = repo;
-        this.embeddingModel = chooseEmbeddingModel(embeddingModelProvider, env);
+        this.embeddingModelProvider = embeddingModelProvider;
+        this.env = env;
     }
 
-    private EmbeddingModel chooseEmbeddingModel(org.springframework.beans.factory.ObjectProvider<EmbeddingModel> provider,
-                                                org.springframework.core.env.Environment env) {
-        // If only one bean, return it
-        List<EmbeddingModel> all = provider.stream().toList();
+    private EmbeddingModel chooseEmbeddingModel() {
+        // Avoid triggering bean initialization at context startup; resolve lazily
+        List<EmbeddingModel> all;
+        try {
+            all = embeddingModelProvider.stream().toList(); // may initialize beans when actually called
+        } catch (Exception e) {
+            return null;
+        }
         if (all.isEmpty()) return null;
         if (all.size() == 1) return all.getFirst();
-        // Prefer by active profile
         List<String> profiles = Arrays.asList(env.getActiveProfiles());
-        // Priority order depending on common profiles
         if (profiles.contains("openai") || profiles.contains("openai-compatible")) {
             for (EmbeddingModel m : all) if (m.getClass().getName().toLowerCase().contains("openai")) return m;
         }
         if (profiles.contains("ollama")) {
             for (EmbeddingModel m : all) if (m.getClass().getName().toLowerCase().contains("ollama")) return m;
         }
-        // Fallback priority: OpenAI > Ollama
         for (EmbeddingModel m : all) if (m.getClass().getName().toLowerCase().contains("openai")) return m;
         for (EmbeddingModel m : all) if (m.getClass().getName().toLowerCase().contains("ollama")) return m;
         return all.getFirst();
@@ -52,11 +57,12 @@ public class DocumentService {
         if (req == null || req.text() == null || req.text().isBlank()) {
             throw new IllegalArgumentException("text must not be empty");
         }
-        if (embeddingModel == null) {
+        EmbeddingModel model = chooseEmbeddingModel();
+        if (model == null) {
             throw new IllegalStateException("No AI embedding provider is configured. Enable a provider profile (e.g. openai, ollama).");
         }
         String userId = (req.userId() == null || req.userId().isBlank()) ? "public" : req.userId();
-        EmbeddingResponse er = embeddingModel.embedForResponse(List.of(req.text()));
+        EmbeddingResponse er = model.embedForResponse(List.of(req.text()));
         float[] vec = er.getResults().getFirst().getOutput();
         String encoded = encode(vec);
         int dims = vec.length;
@@ -67,11 +73,12 @@ public class DocumentService {
 
     public List<SearchMatch> search(String query, String userId, int topK) {
         if (query == null || query.isBlank()) throw new IllegalArgumentException("query must not be empty");
-        if (embeddingModel == null) {
+        EmbeddingModel model = chooseEmbeddingModel();
+        if (model == null) {
             throw new IllegalStateException("No AI embedding provider is configured. Enable a provider profile (e.g. openai, ollama).");
         }
         if (topK <= 0) topK = 5;
-        EmbeddingResponse er = embeddingModel.embedForResponse(List.of(query));
+        EmbeddingResponse er = model.embedForResponse(List.of(query));
         float[] q = er.getResults().getFirst().getOutput();
         List<Document> corpus = (userId == null || userId.isBlank()) ? repo.findAll() : repo.findByUserId(userId);
         // compute cosine similarity

@@ -8,7 +8,7 @@ import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,7 +27,7 @@ public class OpenAiHealthIndicator implements HealthIndicator {
     @Override
     public Health health() {
         Map<String, Object> details = new HashMap<>();
-        details.put("time", OffsetDateTime.now().toString());
+        details.put("time", Instant.now().toString());
 
         CircuitBreaker cb = cbRegistry.circuitBreaker("ai");
         details.put("circuitState", cb.getState().name());

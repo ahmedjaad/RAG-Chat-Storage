@@ -6,11 +6,10 @@ import com.rag.chatstorage.domain.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,13 +30,13 @@ public class ChatSessionRepositoryTest {
         User u = new User(); u.setUserId("u"); users.save(u);
         // session 1 (older, favorite=false)
         ChatSession s1 = new ChatSession(); s1.setUser(u); s1.setTitle("Alpha"); s1.setFavorite(false);
-        s1.setCreatedAt(OffsetDateTime.now().minusHours(2));
-        s1.setUpdatedAt(OffsetDateTime.now().minusHours(2));
+        s1.setCreatedAt(Instant.now().minusSeconds(2 * 3600));
+        s1.setUpdatedAt(Instant.now().minusSeconds(2 * 3600));
         sessions.save(s1);
         // session 2 (newer, favorite=true)
         ChatSession s2 = new ChatSession(); s2.setUser(u); s2.setTitle("Beta"); s2.setFavorite(true);
-        s2.setCreatedAt(OffsetDateTime.now().minusHours(1));
-        s2.setUpdatedAt(OffsetDateTime.now().minusHours(1));
+        s2.setCreatedAt(Instant.now().minusSeconds(1 * 3600));
+        s2.setUpdatedAt(Instant.now().minusSeconds(1 * 3600));
         sessions.save(s2);
 
         var all = sessions.findByUser_UserIdOrderByUpdatedAtDesc("u");

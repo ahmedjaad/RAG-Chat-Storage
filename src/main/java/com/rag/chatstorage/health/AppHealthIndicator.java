@@ -5,7 +5,7 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,7 +22,7 @@ public class AppHealthIndicator implements HealthIndicator {
     public Health health() {
         Map<String, Object> details = new HashMap<>();
         details.put("app", appName);
-        details.put("time", OffsetDateTime.now().toString());
+        details.put("time", Instant.now().toString());
         details.put("authHeader", apiKeyHeader);
         return Health.up().withDetails(details).build();
     }

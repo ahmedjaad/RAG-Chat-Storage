@@ -2,6 +2,7 @@ package com.rag.chatstorage.service;
 
 import com.rag.chatstorage.domain.User;
 import com.rag.chatstorage.repository.UserRepository;
+import java.time.Instant;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,9 @@ public class UserService {
                 .orElseGet(() -> {
                     User u = new User();
                     u.setUserId(userId);
+                    Instant now = Instant.now();
+                    u.setCreatedAt(now);
+                    u.setUpdatedAt(now);
                     return userRepository.save(u);
                 });
     }

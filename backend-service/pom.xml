@@ -135,11 +135,6 @@
             <artifactId>spring-ai-starter-model-ollama</artifactId>
             <version>1.0.1</version>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-starter-model-azure-openai</artifactId>
-            <version>1.0.1</version>
-        </dependency>
         <!-- Auto-load .env for local runs -->
         <dependency>
             <groupId>me.paulschwarz</groupId>

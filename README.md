@@ -140,7 +140,6 @@ Supported profiles:
 - openai (default)
 - anthropic (Claude for chat; OpenAI for embeddings)
 - ollama (local models)
-- azure-openai
 - openai-compatible (e.g., DeepSeek, Mistral servers that speak OpenAI API)
 
 Select a provider at runtime:
@@ -196,9 +195,6 @@ Profiles and env vars:
   - For embeddings uses OpenAI vars above
 - ollama:
   - OLLAMA_BASE_URL, OLLAMA_CHAT_MODEL, OLLAMA_EMBED_MODEL
-- azure-openai:
-  - AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT
-  - AZURE_OPENAI_CHAT_DEPLOYMENT, AZURE_OPENAI_EMBED_DEPLOYMENT
 - openai-compatible (e.g., DeepSeek):
   - PROVIDER_API_KEY, PROVIDER_BASE_URL (and PROVIDER_*_MODEL)
 
@@ -206,7 +202,6 @@ Examples:
 - Default OpenAI: SPRING_PROFILES_ACTIVE=openai OPENAI_API_KEY=sk-... ./mvnw spring-boot:run
 - Anthropic: SPRING_PROFILES_ACTIVE=anthropic ANTHROPIC_API_KEY=... OPENAI_API_KEY=... ./mvnw spring-boot:run
 - Ollama: SPRING_PROFILES_ACTIVE=ollama OLLAMA_BASE_URL=http://localhost:11434 ./mvnw spring-boot:run
-- Azure: SPRING_PROFILES_ACTIVE=azure-openai AZURE_OPENAI_API_KEY=... AZURE_OPENAI_ENDPOINT=... ./mvnw spring-boot:run
 - OpenAI-compatible: SPRING_PROFILES_ACTIVE=openai-compatible PROVIDER_API_KEY=... PROVIDER_BASE_URL=... ./mvnw spring-boot:run
 
 ### Endpoints

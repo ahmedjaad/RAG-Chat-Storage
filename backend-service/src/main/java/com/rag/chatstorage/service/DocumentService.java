@@ -36,10 +36,7 @@ public class DocumentService {
         if (profiles.contains("ollama")) {
             for (EmbeddingModel m : all) if (m.getClass().getName().toLowerCase().contains("ollama")) return m;
         }
-        if (profiles.contains("azure-openai")) {
-            for (EmbeddingModel m : all) if (m.getClass().getName().toLowerCase().contains("openai")) return m;
-        }
-        // Fallback priority: OpenAI > Ollama > Azure-openai naming
+        // Fallback priority: OpenAI > Ollama
         for (EmbeddingModel m : all) if (m.getClass().getName().toLowerCase().contains("openai")) return m;
         for (EmbeddingModel m : all) if (m.getClass().getName().toLowerCase().contains("ollama")) return m;
         return all.getFirst();

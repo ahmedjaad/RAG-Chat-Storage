@@ -34,31 +34,19 @@ services:
     ports:
       - "8082:8080"
 
-  backend:
-    container_name: rag-backend
+  app:
+    container_name: rag-app
     build:
-      context: ./backend-service
+      context: .
     depends_on:
       - mysql
       - redis
     env_file:
       - .env
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-openai}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-ui-embedded,openai}
     ports:
       - "8080:8080"
-
-  ui:
-    container_name: rag-ui
-    build:
-      context: ./ui-app
-    environment:
-      BACKEND_BASE_URL: http://backend:8080
-      API_KEY: ${API_KEY:-changeme}
-    ports:
-      - "8081:8081"
-    depends_on:
-      - backend
 
 volumes:
   mysql_data:

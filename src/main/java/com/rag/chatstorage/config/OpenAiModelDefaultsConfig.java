@@ -3,9 +3,10 @@ package com.rag.chatstorage.config;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 @Configuration
-@org.springframework.context.annotation.Profile({"openai", "!anthropic & !ollama & !openai-compatible"})
+@Profile({ "!anthropic & !ollama"})
 public class OpenAiModelDefaultsConfig {
 
     @Bean

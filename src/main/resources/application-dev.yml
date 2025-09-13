@@ -16,6 +16,11 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
+        id:
+          new_generator_mappings: true
+  liquibase:
+    contexts: dev
+
   jackson:
     serialization:
       write-dates-as-timestamps: false

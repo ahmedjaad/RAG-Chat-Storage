@@ -2,14 +2,14 @@ databaseChangeLog:
   - changeSet:
       id: 002-documents
       author: ahmed
-      context: prod
+      context: dev
       changes:
         - createTable:
             tableName: documents
             columns:
               - column:
                   name: id
-                  type: BIGINT AUTO_INCREMENT
+                  type: BIGINT
                   constraints:
                     primaryKey: true
                     nullable: false
@@ -39,6 +39,14 @@ databaseChangeLog:
                   type: datetime(6)
                   constraints:
                     nullable: false
+
+        - addAutoIncrement:
+            tableName: documents
+            columnName: id
+            columnDataType: BIGINT
+            startValue: 1
+            incrementBy: 1
+
         - createIndex:
             tableName: documents
             indexName: idx_documents_user

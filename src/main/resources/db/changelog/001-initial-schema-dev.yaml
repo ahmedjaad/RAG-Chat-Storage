@@ -2,7 +2,7 @@ databaseChangeLog:
   - changeSet:
       id: 001-initial-schema
       author: ahmed
-      context: prod
+      context: dev
       changes:
         - createTable:
             tableName: users
@@ -28,7 +28,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  type: BIGINT AUTO_INCREMENT
+                  type: BIGINT
                   constraints:
                     primaryKey: true
                     nullable: false
@@ -57,6 +57,14 @@ databaseChangeLog:
                   type: datetime(6)
                   constraints:
                     nullable: false
+
+        - addAutoIncrement:
+            tableName: chat_sessions
+            columnName: id
+            columnDataType: BIGINT
+            startValue: 1
+            incrementBy: 1
+
         - addForeignKeyConstraint:
             baseTableName: chat_sessions
             baseColumnNames: user_id
@@ -69,7 +77,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  type: BIGINT AUTO_INCREMENT
+                  type: BIGINT
                   constraints:
                     primaryKey: true
                     nullable: false
@@ -96,6 +104,14 @@ databaseChangeLog:
                   type: datetime(6)
                   constraints:
                     nullable: false
+
+        - addAutoIncrement:
+            tableName: chat_messages
+            columnName: id
+            columnDataType: BIGINT
+            startValue: 1
+            incrementBy: 1
+
         - addForeignKeyConstraint:
             baseTableName: chat_messages
             baseColumnNames: session_id

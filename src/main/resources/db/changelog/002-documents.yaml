@@ -1,13 +1,7 @@
 databaseChangeLog:
   - changeSet:
       id: 002-documents
-      author: junie
-      preConditions:
-        onFail: MARK_RAN
-        onError: MARK_RAN
-        not:
-          tableExists:
-            tableName: documents
+      author: ahmed
       changes:
         - createTable:
             tableName: documents

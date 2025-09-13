@@ -1,17 +1,7 @@
 databaseChangeLog:
   - changeSet:
       id: 001-initial-schema
-      author: junie
-      preConditions:
-        onFail: MARK_RAN
-        onError: MARK_RAN
-        or:
-          - tableExists:
-              tableName: users
-          - tableExists:
-              tableName: chat_sessions
-          - tableExists:
-              tableName: chat_messages
+      author: ahmed
       changes:
         - createTable:
             tableName: users

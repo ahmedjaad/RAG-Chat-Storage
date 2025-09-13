@@ -1,13 +1,7 @@
 databaseChangeLog:
   - changeSet:
       id: 003-seed-demo-user
-      author: junie
-      preConditions:
-        onFail: MARK_RAN
-        onError: MARK_RAN
-        not:
-          tableExists:
-            tableName: users
+      author: ahmed
       changes:
         - sql:
             stripComments: true
@@ -17,17 +11,7 @@ databaseChangeLog:
               SELECT 1;
   - changeSet:
       id: 003-insert-demo-user
-      author: junie
-      preConditions:
-        onFail: MARK_RAN
-        onError: MARK_RAN
-        and:
-          - tableExists:
-              tableName: users
-          - not:
-              sqlCheck:
-                expectedResult: "0"
-                sql: "SELECT COUNT(1) FROM users WHERE user_id = 'demo'"
+      author: ahmed
       changes:
         - insert:
             tableName: users

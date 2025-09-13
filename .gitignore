@@ -50,6 +50,8 @@ surefire-reports/
 .target/
 
 # Build outputs
+# Ignore Maven/Java build directories everywhere
+**/target/
 
 # Environment files
 .env.local

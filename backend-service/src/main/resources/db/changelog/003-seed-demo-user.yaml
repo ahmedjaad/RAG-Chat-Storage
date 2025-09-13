@@ -1,0 +1,47 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-seed-demo-user
+      author: junie
+      preConditions:
+        onFail: MARK_RAN
+        onError: MARK_RAN
+        not:
+          tableExists:
+            tableName: users
+      changes:
+        - sql:
+            stripComments: true
+            splitStatements: true
+            sql: |
+              -- Ensure users table exists before inserting
+              SELECT 1;
+  - changeSet:
+      id: 003-insert-demo-user
+      author: junie
+      preConditions:
+        onFail: MARK_RAN
+        onError: MARK_RAN
+        and:
+          - tableExists:
+              tableName: users
+          - not:
+              sqlCheck:
+                expectedResult: "0"
+                sql: "SELECT COUNT(1) FROM users WHERE user_id = 'demo'"
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: user_id
+                  value: demo
+              - column:
+                  name: created_at
+                  valueDate: now()
+              - column:
+                  name: updated_at
+                  valueDate: now()
+      rollback:
+        - delete:
+            tableName: users
+            where: "user_id = 'demo'"

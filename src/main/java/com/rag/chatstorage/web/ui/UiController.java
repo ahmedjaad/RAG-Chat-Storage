@@ -1,7 +1,6 @@
 package com.rag.chatstorage.web.ui;
 
 import com.rag.chatstorage.service.ChatSessionService;
-import com.rag.chatstorage.web.dto.SessionDtos;
 import com.rag.chatstorage.web.dto.SessionDtos.MessageResponse;
 import com.rag.chatstorage.web.dto.SessionDtos.PagedMessages;
 import com.rag.chatstorage.web.dto.SessionDtos.SessionResponse;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@org.springframework.context.annotation.Profile("ui-embedded")
 @Controller
 @RequestMapping("/ui")
 public class UiController {
@@ -87,6 +85,10 @@ public class UiController {
     public String listSessions(@RequestParam(required = false) String userId,
                                @RequestParam(required = false) Boolean favorite,
                                Model model) {
+        if (favorite == null) {
+            favorite = false;
+        }
+
         if (userId == null || userId.isBlank()) {
             userId = "demo"; // default for convenience
         }

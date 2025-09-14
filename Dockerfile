@@ -29,11 +29,13 @@ USER appuser
 
 # JVM flags: exit on OOM and container-aware memory settings
 ENV JAVA_TOOL_OPTIONS="-XX:+ExitOnOutOfMemoryError -XX:+UseContainerSupport -XX:MaxRAMPercentage=75 -XX:InitialRAMPercentage=50 -Dfile.encoding=UTF-8"
-
-EXPOSE 8080
+#
+EXPOSE 8080 8000
 
 # Healthcheck against Spring Boot actuator
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 CMD \
-  curl -fsS http://localhost:8080/actuator/health || exit 1
+#HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 CMD \
+#  curl -fsS http://localhost:8080/actuator/health || exit 1
 
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+ADD entrypoint.sh entrypoint.sh
+
+ENTRYPOINT ["sh", "entrypoint.sh"]

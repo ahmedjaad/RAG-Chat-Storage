@@ -44,9 +44,10 @@ services:
     env_file:
       - .env
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-ui-embedded,openai}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-ui-embedded,openai,prod}
     ports:
       - "8080:8080"
+      - "8000:8000"
 
 volumes:
   mysql_data:

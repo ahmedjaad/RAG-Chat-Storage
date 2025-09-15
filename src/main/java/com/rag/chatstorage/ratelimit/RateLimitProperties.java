@@ -116,6 +116,13 @@ public class RateLimitProperties {
     public void setDatabase(int database) { this.database = database; }
     public int getKeyTtlSeconds() { return keyTtlSeconds; }
     public void setKeyTtlSeconds(int keyTtlSeconds) { this.keyTtlSeconds = keyTtlSeconds; }
+
+    /**
+     * Paths that are excluded from rate limiting.
+     * Typically, includes health checks, docs, static assets, etc.
+     * Follows the Ant-style path patterns (e.g., /docs/**, /static/*).
+      * @return the list of whitelisted paths
+     */
     public List<String> getWhitelistPaths() { return whitelistPaths; }
     public void setWhitelistPaths(List<String> whitelistPaths) { this.whitelistPaths = whitelistPaths; }
     public Map<String, String> getApiKeys() { return apiKeys; }

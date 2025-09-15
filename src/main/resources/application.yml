@@ -91,6 +91,7 @@ ratelimit:
   trustProxies: false
   keyPrefix: "ratelimit:"
   defaultTier: default
+#  For containerized deployments, the value of REDIS_HOST should be set to the container name.
   host: ${REDIS_HOST:localhost}
   port: ${REDIS_PORT:6379}
   password: ${REDIS_PASSWORD:}

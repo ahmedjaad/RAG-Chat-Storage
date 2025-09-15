@@ -5,6 +5,11 @@ logging:
     com.rag.chatstorage: DEBUG
 
 spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
   datasource:
     url: jdbc:h2:mem:rag;DB_CLOSE_DELAY=-1;MODE=MySQL
     driver-class-name: org.h2.Driver
@@ -35,3 +40,14 @@ cors:
   allowed-origins: "*"
   allowed-methods: GET,POST,PATCH,DELETE,OPTIONS
   allowed-headers: "*"
+
+# Distributed rate limiting
+ratelimit:
+  enabled: true
+  # Enable Redis-backed distributed rate limiting only when explicitly requested.
+  # Local in-memory rate limiting remains active regardless of this flag.
+  redisEnabled: ${RATELIMIT_REDIS_ENABLED:false}
+  #  For containerized deployments, the value of REDIS_HOST should be set to the container name.
+  host: localhost
+  port: 6379
+  ssl: false

@@ -22,6 +22,12 @@ spring:
     client:
       connect-timeout: 10s
       read-timeout: 10s
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      database: ${REDIS_DATABASE:0}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
 
 server:
   port: ${PORT:8080}
@@ -106,6 +112,7 @@ ratelimit:
     - "/v3/api-docs/**"
     - "/actuator/health/**"
     - "/ui/**"
+    - "/favicon.ico"
     - "/static/**"
   apiKeys:
     # Map API keys to tiers; example defaults

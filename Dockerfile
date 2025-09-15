@@ -34,7 +34,7 @@ EXPOSE 8080 8000
 
 # Healthcheck against Spring Boot actuator
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 CMD \
-  curl -fsS http://localhost:8080/actuator/health || exit 1
+  curl -fsS http://rag-app:8080/actuator/health || exit 1
 
 ADD entrypoint.sh entrypoint.sh
 

@@ -13,8 +13,22 @@
     ta.addEventListener('keydown', function(e){
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        form.submit();
+        // Use requestSubmit to trigger native validation and submit
+        if (typeof form.requestSubmit === 'function') form.requestSubmit(); else form.submit();
       }
+    });
+    // Disable the send button during submission to prevent double sends
+    form.addEventListener('submit', function(){
+      try {
+        const btn = form.querySelector('button[type="submit"]');
+        if (btn) {
+          btn.disabled = true;
+          btn.classList.add('busy');
+          btn.setAttribute('aria-disabled','true');
+        }
+      } catch(e) {}
+      // Do NOT clear the textarea here; clearing at this point would send an empty value.
+      // The page will navigate/refresh after submit, resetting the field naturally.
     });
   }
 

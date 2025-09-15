@@ -95,4 +95,8 @@ public class ChatSessionService {
     public Page<ChatMessage> getMessages(Long sessionId, int page, int size) {
         return messageRepository.findBySession_Id(sessionId, PageRequest.of(page, size));
     }
+
+    public List<ChatMessage> listAllMessagesOrdered(Long sessionId) {
+        return messageRepository.findBySession_IdOrderByCreatedAtAsc(sessionId);
+    }
 }

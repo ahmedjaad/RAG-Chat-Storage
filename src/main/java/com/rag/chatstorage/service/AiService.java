@@ -65,6 +65,50 @@ public class AiService {
         }
     }
 
+    @Retry(name = "ai", fallbackMethod = "fallbackWithHistory")
+    @CircuitBreaker(name = "ai", fallbackMethod = "fallbackWithHistory")
+    public String inferWithHistory(String system, java.util.List<com.rag.chatstorage.domain.ChatMessage> history) {
+        try {
+            if (chatClient == null) {
+                throw new AiFriendlyException(
+                        "AI_NOT_CONFIGURED",
+                        "No AI chat provider is configured. Enable a provider profile (e.g. openai, ollama) or set necessary environment variables.",
+                        "Set SPRING_PROFILES_ACTIVE=openai and provide API keys, or use ollama profile."
+                );
+            }
+            var prompt = chatClient.prompt();
+            java.util.List<org.springframework.ai.chat.messages.Message> msgs = new java.util.ArrayList<>();
+            if (StringUtils.hasText(system)) {
+                msgs.add(new org.springframework.ai.chat.messages.SystemMessage(system));
+            }
+            // Limit to last 30 messages to keep prompt manageable
+            int max = 30;
+            int start = Math.max(0, history.size() - max);
+            for (int i = start; i < history.size(); i++) {
+                com.rag.chatstorage.domain.ChatMessage m = history.get(i);
+                switch (m.getSender()) {
+                    case USER -> msgs.add(new org.springframework.ai.chat.messages.UserMessage(m.getContent()));
+                    case ASSISTANT -> msgs.add(new org.springframework.ai.chat.messages.AssistantMessage(m.getContent()));
+                    case SYSTEM -> msgs.add(new org.springframework.ai.chat.messages.SystemMessage(m.getContent()));
+                }
+            }
+            return prompt.messages(msgs).call().content();
+        } catch (Exception e) {
+            maybeHonorRetryAfter(e);
+            String msg = normalizeMessage(e);
+            String hint = extractHint(e);
+            throw new AiFriendlyException("AI_UNAVAILABLE", msg, hint);
+        }
+    }
+
+    // Fallback for resilience4j annotations with history
+    @SuppressWarnings("unused")
+    private String fallbackWithHistory(String system, java.util.List<com.rag.chatstorage.domain.ChatMessage> history, Throwable t) {
+        String msg = normalizeMessage(t instanceof Exception e ? e : new Exception(t));
+        String hint = extractHint(t instanceof Exception e ? e : new Exception(t));
+        throw new AiFriendlyException("AI_UNAVAILABLE", msg, hint);
+    }
+
     // If provider sends Retry-After on 429/5xx, wait that period before allowing Retry to re-execute
     private void maybeHonorRetryAfter(Exception e) {
         if (e instanceof WebClientResponseException wex) {

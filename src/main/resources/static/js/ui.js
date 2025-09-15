@@ -13,23 +13,40 @@
     ta.addEventListener('keydown', function(e){
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        // Use requestSubmit to trigger native validation and submit
-        if (typeof form.requestSubmit === 'function') form.requestSubmit(); else form.submit();
+        form.requestSubmit();
       }
     });
-    // Disable the send button during submission to prevent double sends
-    form.addEventListener('submit', function(){
-      try {
-        const btn = form.querySelector('button[type="submit"]');
-        if (btn) {
-          btn.disabled = true;
-          btn.classList.add('busy');
-          btn.setAttribute('aria-disabled','true');
-        }
-      } catch(e) {}
-      // Do NOT clear the textarea here; clearing at this point would send an empty value.
-      // The page will navigate/refresh after submit, resetting the field naturally.
-    });
+      // Show a transient thinking state and clear input on submit
+      form.addEventListener('submit', function(){
+          try {
+              const btn = form.querySelector('button[type="submit"]');
+              if (btn) {
+                  btn.dataset.prevText = btn.textContent;
+                  btn.setAttribute('aria-busy','true');
+                  btn.disabled = true;
+              }
+              // Clear the input to signal message sent
+              ta.value = '';
+              // Optionally display a small inline indicator
+              const chat = document.querySelector('.chat');
+              if (chat) {
+                  const thinking = document.createElement('div');
+                  thinking.className = 'msg assistant';
+                  const bubble = document.createElement('div');
+                  bubble.className = 'bubble assistant';
+                  const sender = document.createElement('div');
+                  sender.className = 'sender';
+                  sender.innerHTML = '<span>ASSISTANT</span><span class="time">…</span>';
+                  const body = document.createElement('div');
+                  bubble.appendChild(sender);
+                  bubble.appendChild(body);
+                  thinking.appendChild(bubble);
+                  chat.appendChild(thinking);
+                  setTimeout(()=>{ chat.scrollTop = chat.scrollHeight; }, 10);
+              }
+          } catch(e) {}
+      });
+
   }
 
   // Confirm delete actions

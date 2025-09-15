@@ -26,7 +26,7 @@
                   btn.disabled = true;
               }
               // Clear the input to signal message sent
-              ta.value = '';
+              setTimeout(()=>{ ta.value = ''; }, 0);
               // Optionally display a small inline indicator
               const chat = document.querySelector('.chat');
               if (chat) {

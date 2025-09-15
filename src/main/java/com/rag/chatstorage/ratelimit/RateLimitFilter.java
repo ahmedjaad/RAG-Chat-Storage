@@ -1,5 +1,7 @@
 package com.rag.chatstorage.ratelimit;
 
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket;
 import io.github.bucket4j.BucketConfiguration;
 import io.github.bucket4j.ConsumptionProbe;
 import io.github.bucket4j.distributed.BucketProxy;
@@ -18,6 +20,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -36,19 +39,19 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final ProxyManager<byte[]> proxyManager;
     private final AntPathMatcher matcher = new AntPathMatcher();
     private final MeterRegistry meterRegistry;
-    private final Map<String, io.github.bucket4j.Bucket> localBuckets = new ConcurrentHashMap<>();
+    private final Map<String, Bucket> localBuckets = new ConcurrentHashMap<>();
 
     @Value("${security.api-key.header:X-API-KEY}")
     private String apiKeyHeader;
 
-    public RateLimitFilter(RateLimitProperties props, org.springframework.beans.factory.ObjectProvider<ProxyManager<byte[]>> proxyManagerProvider, MeterRegistry meterRegistry) {
+    public RateLimitFilter(RateLimitProperties props, ObjectProvider<ProxyManager<byte[]>> proxyManagerProvider, MeterRegistry meterRegistry) {
         this.props = props;
         this.proxyManager = proxyManagerProvider.getIfAvailable();
         this.meterRegistry = meterRegistry;
     }
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+    protected boolean shouldNotFilter(HttpServletRequest request) {
         if (!props.isEnabled()) return true;
         String path = request.getRequestURI();
         for (String p : props.getWhitelistPaths()) {
@@ -78,14 +81,14 @@ public class RateLimitFilter extends OncePerRequestFilter {
         ConsumptionProbe probe;
         if (proxyAvailable()) {
             try {
-                BucketProxy bucket = proxyManager.builder().build(key, config);
+                BucketProxy bucket = proxyManager.builder().build(key, ()-> config);
                 probe = bucket.tryConsumeAndReturnRemaining(cost);
             } catch (Exception ex) {
                 // Fallback to local in-memory bucket with stricter limits
                 String localKey = new String(key, StandardCharsets.UTF_8);
-                io.github.bucket4j.Bucket local = localBuckets.computeIfAbsent(localKey, k -> {
-                    io.github.bucket4j.local.LocalBucketBuilder lb = io.github.bucket4j.Bucket.builder();
-                    for (io.github.bucket4j.Bandwidth bw : adjustForFallback(policy.getBandwidths())) {
+                Bucket local = localBuckets.computeIfAbsent(localKey, k -> {
+                    io.github.bucket4j.local.LocalBucketBuilder lb = Bucket.builder();
+                    for (Bandwidth bw : adjustForFallback(policy.getBandwidths())) {
                         lb.addLimit(bw);
                     }
                     return lb.build();
@@ -96,9 +99,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
         } else {
             // No proxy manager configured; use local bucket without exceptions
             String localKey = new String(key, StandardCharsets.UTF_8);
-            io.github.bucket4j.Bucket local = localBuckets.computeIfAbsent(localKey, k -> {
-                io.github.bucket4j.local.LocalBucketBuilder lb = io.github.bucket4j.Bucket.builder();
-                for (io.github.bucket4j.Bandwidth bw : adjustForFallback(policy.getBandwidths())) {
+            Bucket local = localBuckets.computeIfAbsent(localKey, k -> {
+                io.github.bucket4j.local.LocalBucketBuilder lb = Bucket.builder();
+                for (Bandwidth bw : adjustForFallback(policy.getBandwidths())) {
                     lb.addLimit(bw);
                 }
                 return lb.build();
@@ -200,21 +203,21 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private BucketConfiguration toBucketConfig(List<RateLimitProperties.BandwidthDef> defs) {
         var builder = BucketConfiguration.builder();
-        for (io.github.bucket4j.Bandwidth bw : adjustForFallback(defs)) {
+        for (Bandwidth bw : adjustForFallback(defs)) {
             builder.addLimit(bw);
         }
         return builder.build();
     }
 
-    private List<io.github.bucket4j.Bandwidth> adjustForFallback(List<RateLimitProperties.BandwidthDef> defs) {
+    private List<Bandwidth> adjustForFallback(List<RateLimitProperties.BandwidthDef> defs) {
         double factor = props.getFallbackFactor() > 0 && props.getFallbackFactor() <= 1 ? props.getFallbackFactor() : 0.5;
-        List<io.github.bucket4j.Bandwidth> list = new ArrayList<>();
+        List<Bandwidth> list = new ArrayList<>();
         for (RateLimitProperties.BandwidthDef d : defs) {
             long limit = Math.max(1, (long) Math.floor(d.getLimit() * (proxyAvailable() ? 1.0 : factor)));
             io.github.bucket4j.Refill refill = "interval".equalsIgnoreCase(d.getRefillStrategy())
                     ? io.github.bucket4j.Refill.intervally(limit, Duration.ofSeconds(d.getWindowSeconds()))
                     : io.github.bucket4j.Refill.greedy(limit, Duration.ofSeconds(d.getWindowSeconds()));
-            list.add(io.github.bucket4j.Bandwidth.classic(limit, refill));
+            list.add(Bandwidth.classic(limit, refill));
         }
         return list;
     }

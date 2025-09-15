@@ -1,8 +1,20 @@
 package com.rag.chatstorage.service;
 
+import com.rag.chatstorage.domain.ChatMessage;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
+import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -31,8 +43,8 @@ public class AiService {
     @Value("${spring.ai.openai.api-key:}")
     private String apiKey;
 
-    @org.springframework.beans.factory.annotation.Autowired
-        public AiService(org.springframework.beans.factory.ObjectProvider<ChatClient> chatClientProvider) {
+    @Autowired
+        public AiService(ObjectProvider<ChatClient> chatClientProvider) {
         this.chatClient = chatClientProvider.getIfAvailable();
     }
 
@@ -67,7 +79,7 @@ public class AiService {
 
     @Retry(name = "ai", fallbackMethod = "fallbackWithHistory")
     @CircuitBreaker(name = "ai", fallbackMethod = "fallbackWithHistory")
-    public String inferWithHistory(String system, java.util.List<com.rag.chatstorage.domain.ChatMessage> history) {
+    public String inferWithHistory(String user, String system, List<ChatMessage> history) {
         try {
             if (chatClient == null) {
                 throw new AiFriendlyException(
@@ -77,22 +89,22 @@ public class AiService {
                 );
             }
             var prompt = chatClient.prompt();
-            java.util.List<org.springframework.ai.chat.messages.Message> msgs = new java.util.ArrayList<>();
+            List<Message> msgs = new ArrayList<>();
             if (StringUtils.hasText(system)) {
-                msgs.add(new org.springframework.ai.chat.messages.SystemMessage(system));
+                msgs.add(new SystemMessage(system));
             }
             // Limit to last 30 messages to keep prompt manageable
             int max = 30;
             int start = Math.max(0, history.size() - max);
             for (int i = start; i < history.size(); i++) {
-                com.rag.chatstorage.domain.ChatMessage m = history.get(i);
+                ChatMessage m = history.get(i);
                 switch (m.getSender()) {
-                    case USER -> msgs.add(new org.springframework.ai.chat.messages.UserMessage(m.getContent()));
-                    case ASSISTANT -> msgs.add(new org.springframework.ai.chat.messages.AssistantMessage(m.getContent()));
-                    case SYSTEM -> msgs.add(new org.springframework.ai.chat.messages.SystemMessage(m.getContent()));
+                    case USER -> msgs.add(new UserMessage(m.getContent()));
+                    case ASSISTANT -> msgs.add(new AssistantMessage(m.getContent()));
+                    case SYSTEM -> msgs.add(new SystemMessage(m.getContent()));
                 }
             }
-            return prompt.messages(msgs).call().content();
+            return prompt.user(user).messages(msgs).call().content();
         } catch (Exception e) {
             maybeHonorRetryAfter(e);
             String msg = normalizeMessage(e);
@@ -103,7 +115,7 @@ public class AiService {
 
     // Fallback for resilience4j annotations with history
     @SuppressWarnings("unused")
-    private String fallbackWithHistory(String system, java.util.List<com.rag.chatstorage.domain.ChatMessage> history, Throwable t) {
+    private String fallbackWithHistory(String system, List<ChatMessage> history, Throwable t) {
         String msg = normalizeMessage(t instanceof Exception e ? e : new Exception(t));
         String hint = extractHint(t instanceof Exception e ? e : new Exception(t));
         throw new AiFriendlyException("AI_UNAVAILABLE", msg, hint);
@@ -128,8 +140,8 @@ public class AiService {
                 return Long.parseLong(value) * 1000L;
             }
             // RFC 1123 date
-            java.time.ZonedDateTime when = java.time.ZonedDateTime.parse(value, java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME);
-            long millis = java.time.Duration.between(java.time.ZonedDateTime.now(), when).toMillis();
+            ZonedDateTime when = ZonedDateTime.parse(value, DateTimeFormatter.RFC_1123_DATE_TIME);
+            long millis = Duration.between(ZonedDateTime.now(), when).toMillis();
             return Math.max(millis, 0);
         } catch (Exception ex) {
             return 0;

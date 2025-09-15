@@ -59,7 +59,7 @@ public class UiController {
         // Try AI reply with full session context
         try {
             String system = "You are a helpful AI assistant.";
-            String reply = aiService.inferWithHistory(system, service.listAllMessagesOrdered(session.getId()));
+            String reply = aiService.inferWithHistory(content, system, service.listAllMessagesOrdered(session.getId()));
             service.addMessage(session.getId(), com.rag.chatstorage.domain.ChatMessage.Sender.ASSISTANT, reply, null);
         } catch (com.rag.chatstorage.service.AiService.AiFriendlyException afe) {
             ra.addFlashAttribute("uiAiIssue", true);
@@ -152,7 +152,7 @@ public class UiController {
         if (sender == com.rag.chatstorage.domain.ChatMessage.Sender.USER) {
             try {
                 String system = "You are a helpful AI assistant."; // simple default system prompt
-                String reply = aiService.inferWithHistory(system, service.listAllMessagesOrdered(id));
+                String reply = aiService.inferWithHistory(content, system, service.listAllMessagesOrdered(id));
                 service.addMessage(id, com.rag.chatstorage.domain.ChatMessage.Sender.ASSISTANT, reply, null);
             } catch (com.rag.chatstorage.service.AiService.AiFriendlyException afe) {
                 // Set a friendly, non-technical toast message and a short code for optional diagnostics

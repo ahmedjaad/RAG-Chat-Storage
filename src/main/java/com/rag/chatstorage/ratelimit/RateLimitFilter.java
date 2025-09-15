@@ -30,6 +30,14 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+/**
+ * Servlet filter that enforces API rate limits based on {@link RateLimitProperties}.
+ * <p>
+ * The filter evaluates incoming requests against configured policies, attempts to consume tokens
+ * from a distributed Redis-backed bucket (when available), and falls back to local in-memory
+ * buckets if Redis is unavailable or not configured. Standard RateLimit headers are added to
+ * responses and a 429 Problem+JSON body is returned when limits are exceeded.
+ */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 2)
 public class RateLimitFilter extends OncePerRequestFilter {
@@ -44,13 +52,23 @@ public class RateLimitFilter extends OncePerRequestFilter {
     @Value("${security.api-key.header:X-API-KEY}")
     private String apiKeyHeader;
 
-    public RateLimitFilter(RateLimitProperties props, ObjectProvider<ProxyManager<byte[]>> proxyManagerProvider, MeterRegistry meterRegistry) {
+    /**
+         * Creates a new RateLimitFilter.
+         *
+         * @param props rate limit configuration properties
+         * @param proxyManagerProvider optional provider for the distributed Bucket4j ProxyManager (may be absent to enable local fallback)
+         * @param meterRegistry Micrometer registry used to record allow/block metrics
+         */
+        public RateLimitFilter(RateLimitProperties props, ObjectProvider<ProxyManager<byte[]>> proxyManagerProvider, MeterRegistry meterRegistry) {
         this.props = props;
         this.proxyManager = proxyManagerProvider.getIfAvailable();
         this.meterRegistry = meterRegistry;
     }
 
     @Override
+    /*
+     * Determines whether this request should bypass rate limiting based on configuration.
+     */
     protected boolean shouldNotFilter(HttpServletRequest request) {
         if (!props.isEnabled()) return true;
         String path = request.getRequestURI();
@@ -61,6 +79,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     @Override
+    /*
+     * Core filter logic that selects the matching policy, consumes tokens from a bucket,
+     * adds response headers, and returns 429 when the request exceeds its budget.
+     */
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String method = request.getMethod();
         String path = request.getRequestURI();
@@ -135,8 +157,14 @@ public class RateLimitFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    /*
+     * Normalizes potentially unsafe values for logging/headers by stripping non-alphanumerics.
+     */
     private String sanitize(String s) { return s == null ? "unknown" : s.replaceAll("[^a-zA-Z0-9:_-]", "?"); }
 
+    /*
+     * Populates standard RateLimit headers and legacy X-RateLimit-* headers on the response.
+     */
     private void addHeaders(HttpServletResponse response, RateLimitProperties.Policy policy, ConsumptionProbe probe, int cost) {
         // RateLimit-Limit: send per bandwidth values
         List<String> limits = new ArrayList<>();
@@ -156,10 +184,16 @@ public class RateLimitFilter extends OncePerRequestFilter {
         }
     }
 
+    /*
+     * Extracts API key from the configured header.
+     */
     private String getApiKey(HttpServletRequest request) {
         return request.getHeader(apiKeyHeader);
     }
 
+    /*
+     * Resolves the rate limiting subject (API key or IP address) for the request.
+     */
     private String resolveSubject(HttpServletRequest request) {
         String apiKey = getApiKey(request);
         if (StringUtils.hasText(apiKey)) return "key:" + apiKey;
@@ -177,6 +211,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return "ip:" + ip;
     }
 
+    /*
+     * Selects the first matching policy for the given method/path and tier; remembers a generic fallback.
+     */
     private RateLimitProperties.Policy selectPolicy(String method, String path, String tier) {
         RateLimitProperties.Policy fallback = null;
         for (RateLimitProperties.Policy p : props.getPolicies()) {
@@ -186,6 +223,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
         }
         return fallback;
     }
+    /*
+     * Checks if a request method and path match the policy's method/path patterns.
+     */
     private boolean matches(RateLimitProperties.Policy p, String method, String path) {
         if (p.getMatch() == null) return true;
         boolean methodOk = p.getMatch().getMethods() == null || p.getMatch().getMethods().isEmpty() || p.getMatch().getMethods().stream().anyMatch(m -> m.equalsIgnoreCase(method));
@@ -193,6 +233,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return methodOk && pathOk;
     }
 
+    /*
+     * Computes the token cost for a request based on policy overrides; defaults to 1.
+     */
     private int computeCost(RateLimitProperties.Policy p, String method, String path) {
         if (p.getCosts() == null) return 1;
         return p.getCosts().stream()
@@ -201,6 +244,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
                 .findFirst().orElse(1);
     }
 
+    /*
+     * Builds a Bucket4j configuration from a list of bandwidth definitions, considering fallback adjustments.
+     */
     private BucketConfiguration toBucketConfig(List<RateLimitProperties.BandwidthDef> defs) {
         var builder = BucketConfiguration.builder();
         for (Bandwidth bw : adjustForFallback(defs)) {
@@ -209,6 +255,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return builder.build();
     }
 
+    /*
+     * Adjusts bandwidth limits when using local fallback, making them stricter based on fallbackFactor.
+     */
     private List<Bandwidth> adjustForFallback(List<RateLimitProperties.BandwidthDef> defs) {
         double factor = props.getFallbackFactor() > 0 && props.getFallbackFactor() <= 1 ? props.getFallbackFactor() : 0.5;
         List<Bandwidth> list = new ArrayList<>();
@@ -222,6 +271,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return list;
     }
 
+    /*
+     * Checks if a distributed ProxyManager is available for Redis-backed buckets.
+     */
     private boolean proxyAvailable() {
         try {
             return proxyManager != null;
@@ -231,6 +283,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
 
+    /*
+     * Normalizes dynamic path segments (e.g., numeric IDs) to reduce cardinality for keys/metrics.
+     */
     private String normalizePath(String path) {
         // Basic normalization: replace numeric path segments with {id}
         String[] parts = path.split("/");
@@ -240,14 +295,23 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return String.join("/", parts);
     }
 
+    /*
+     * Builds a deterministic bucket key from tier, subject, method and normalized path.
+     */
     private String buildKey(String prefix, String tier, String subject, String method, String normalizedPath) {
         return (prefix == null ? "ratelimit:" : prefix) + tier + ":" + subject + ":" + method + ":" + normalizedPath;
     }
 
+    /*
+     * Returns the smallest limit among a policy's bandwidth windows.
+     */
     private long mostRestrictiveLimit(RateLimitProperties.Policy p) {
         return p.getBandwidths().stream().mapToLong(RateLimitProperties.BandwidthDef::getLimit).min().orElse(0);
     }
 
+    /*
+     * Records Micrometer counters for allowed/blocked requests per normalized endpoint, method and tier.
+     */
     private void recordMetrics(String method, String path, String tier, boolean allowed) {
         String endpoint = normalizePath(path);
         meterRegistry.counter("counter.ratelimit.requests", "endpoint", endpoint, "method", method, "tier", tier, "outcome", allowed ? "allowed" : "blocked").increment();

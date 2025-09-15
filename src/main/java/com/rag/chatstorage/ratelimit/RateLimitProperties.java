@@ -4,6 +4,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.*;
 
+/**
+ * Configuration properties for the application rate limiting feature.
+ * <p>
+ * These properties control whether the limiter is enabled, how subjects are identified,
+ * how Redis is accessed for distributed limiting, default tiers and key TTLs, and the
+ * set of declarative policies (bandwidths and costs) that the {@link RateLimitFilter}
+ * evaluates for incoming requests.
+ */
 @ConfigurationProperties(prefix = "ratelimit")
 public class RateLimitProperties {
     private boolean enabled = true;
@@ -28,6 +36,9 @@ public class RateLimitProperties {
     // Fallback local limiter tightness multiplier (smaller is stricter)
     private double fallbackFactor = 0.5;
 
+    /**
+     * Declarative policy describing which requests are matched and the limits applied.
+     */
     public static class Policy {
         private String id;
         private String tier; // optional
@@ -45,6 +56,9 @@ public class RateLimitProperties {
         public List<Cost> getCosts() { return costs; }
         public void setCosts(List<Cost> costs) { this.costs = costs; }
     }
+    /**
+     * Match criteria used to select a policy for a given request (methods and paths).
+     */
     public static class Match {
         private List<String> methods = Arrays.asList("GET","POST","PATCH","DELETE");
         private List<String> paths = Arrays.asList("/api/**");
@@ -53,6 +67,9 @@ public class RateLimitProperties {
         public List<String> getPaths() { return paths; }
         public void setPaths(List<String> paths) { this.paths = paths; }
     }
+    /**
+     * Definition of a single bandwidth window, including limit, window size and refill strategy.
+     */
     public static class BandwidthDef {
         private long limit;
         private long windowSeconds;
@@ -64,6 +81,9 @@ public class RateLimitProperties {
         public String getRefillStrategy() { return refillStrategy; }
         public void setRefillStrategy(String refillStrategy) { this.refillStrategy = refillStrategy; }
     }
+    /**
+     * Per-request cost override allowing specific routes/methods to consume more tokens.
+     */
     public static class Cost {
         private String path;
         private String method;

@@ -17,10 +17,24 @@ import org.springframework.util.StringUtils;
 
 @Configuration
 @ConditionalOnProperty(prefix = "ratelimit", name = "redisEnabled", havingValue = "true")
+/**
+ * Spring configuration that wires the distributed rate limiter backed by Redis (Bucket4j + Lettuce).
+ * <p>
+ * When ratelimit.redisEnabled=true, this registers a Redis connection and a ProxyManager bean.
+ * If Redis is unavailable and failOnRedisUnavailable=false, the ProxyManager bean is omitted,
+ * allowing the system to fall back to local in-memory buckets.
+ */
 @EnableConfigurationProperties(RateLimitProperties.class)
 public class RateLimitingConfig {
     private static final Logger log = LoggerFactory.getLogger(RateLimitingConfig.class);
 
+    /**
+     * Creates a stateful Lettuce connection for Bucket4j to store bucket state in Redis.
+     * The connection is configured using {@link RateLimitProperties}.
+     *
+     * @param props rate limiting properties used to build the Redis URI
+     * @return a stateful Redis connection
+     */
     @Bean(destroyMethod = "close")
     public StatefulRedisConnection<byte[], byte[]> statefulRedisConnection(RateLimitProperties props) {
         RedisClient client = RedisClient.create(
@@ -34,6 +48,15 @@ public class RateLimitingConfig {
         );
         return client.connect(new ByteArrayCodec());
     }
+    /**
+     * Builds a Bucket4j ProxyManager backed by Redis for distributed rate limiting.
+     * If Redis is unavailable and {@code failOnRedisUnavailable} is false, the method logs a warning
+     * and returns {@code null} so that Spring does not register the bean. This enables a local fallback.
+     *
+     * @param nativeConn the Redis connection
+     * @param props rate limit configuration
+     * @return a ProxyManager or {@code null} when falling back to local buckets
+     */
     @Bean
     public ProxyManager<byte[]> proxyManager(StatefulRedisConnection<byte[], byte[]> nativeConn, RateLimitProperties props) {
         try {

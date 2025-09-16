@@ -49,5 +49,16 @@ services:
       - "8080:8080"
       - "8000:8000"
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: rag-ollama
+    profiles: ["ollama"]           # only runs when docker-compose --profile ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama  # persist your llama3 model
+
 volumes:
   mysql_data:
+  ollama_data:

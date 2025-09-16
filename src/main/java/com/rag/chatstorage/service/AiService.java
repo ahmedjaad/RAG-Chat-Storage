@@ -115,7 +115,7 @@ public class AiService {
 
     // Fallback for resilience4j annotations with history
     @SuppressWarnings("unused")
-    private String fallbackWithHistory(String system, List<ChatMessage> history, Throwable t) {
+    private String fallbackWithHistory(String user, String system, List<ChatMessage> history, Throwable t) {
         String msg = normalizeMessage(t instanceof Exception e ? e : new Exception(t));
         String hint = extractHint(t instanceof Exception e ? e : new Exception(t));
         throw new AiFriendlyException("AI_UNAVAILABLE", msg, hint);

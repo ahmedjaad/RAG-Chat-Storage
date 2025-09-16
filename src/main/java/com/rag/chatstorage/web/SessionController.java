@@ -2,7 +2,9 @@ package com.rag.chatstorage.web;
 
 import com.rag.chatstorage.domain.ChatMessage;
 import com.rag.chatstorage.domain.ChatSession;
+import com.rag.chatstorage.service.AiService;
 import com.rag.chatstorage.service.ChatSessionService;
+import com.rag.chatstorage.web.dto.AddMessageResponse;
 import com.rag.chatstorage.web.dto.SessionDtos.*;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -24,9 +26,11 @@ import java.util.stream.Collectors;
 @Tag(name = "Sessions", description = "Manage chat sessions and messages")
 public class SessionController {
 
+    private final AiService aiService;
     private final ChatSessionService service;
 
-    public SessionController(ChatSessionService service) {
+    public SessionController(AiService aiService, ChatSessionService service) {
+        this.aiService = aiService;
         this.service = service;
     }
 
@@ -160,10 +164,40 @@ public class SessionController {
                             content = @Content(mediaType = "application/problem+json"))
             }
     )
-    public MessageResponse addMessage(@PathVariable Long id, @Valid @RequestBody AddMessageRequest req) {
-        ChatMessage m = service.addMessage(id, req.sender(), req.content(), req.context());
-        return MessageResponse.from(m);
+
+
+    public AddMessageResponse addMessage(@PathVariable Long id,
+                                         @Valid @RequestBody AddMessageRequest req) {
+        AddMessageResponse resp = new AddMessageResponse();
+
+        // Save user message
+        ChatMessage userMsg = service.addMessage(id, req.sender(), req.content(), req.context());
+        resp.setUserMessage(AddMessageResponse.MessageResponse.from(userMsg));
+
+        // If sender is USER, try AI reply
+        if (req.sender() == ChatMessage.Sender.USER) {
+            try {
+                String system = "You are a helpful AI assistant.";
+                String aiReply = aiService.inferWithHistory(
+                        req.content(), system, service.listAllMessagesOrdered(id)
+                );
+                ChatMessage aiMsg = service.addMessage(id, ChatMessage.Sender.ASSISTANT, aiReply, null);
+                resp.setAiMessage(AddMessageResponse.MessageResponse.from(aiMsg));
+            } catch (AiService.AiFriendlyException afe) {
+                resp.setAiError(new AddMessageResponse.AiError(
+                        afe.getMessage(), afe.getCode(), afe.getHint()
+                ));
+            } catch (Exception e) {
+                resp.setAiError(new AddMessageResponse.AiError(
+                        "The assistant couldn’t respond right now. Please try again.",
+                        "AI_UNAVAILABLE", null
+                ));
+            }
+        }
+
+        return resp;
     }
+
 
     @GetMapping("/{id}/messages")
     @Operation(

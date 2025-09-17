@@ -27,7 +27,7 @@ public class UserServiceTest {
     void ensureUser_returnsExisting() {
         User existing = new User();
         existing.setUserId("u1");
-        when(userRepository.findById("u1")).thenReturn(Optional.of(existing));
+        when(userRepository.findByUserId("u1")).thenReturn(Optional.of(existing));
 
         User result = userService.ensureUser("u1");
 
@@ -37,7 +37,7 @@ public class UserServiceTest {
 
     @Test
     void ensureUser_createsWhenMissing() {
-        when(userRepository.findById("u2")).thenReturn(Optional.empty());
+        when(userRepository.findByUserId("u2")).thenReturn(Optional.empty());
         when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         User result = userService.ensureUser("u2");

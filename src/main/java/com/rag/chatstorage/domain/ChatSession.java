@@ -1,7 +1,6 @@
 package com.rag.chatstorage.domain;
 
 import jakarta.persistence.*;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.Instant;
@@ -11,11 +10,7 @@ import java.util.List;
 @Entity
 @Table(name = "chat_sessions")
 @EntityListeners(AuditingEntityListener.class)
-public class ChatSession {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class ChatSession extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
@@ -27,10 +22,6 @@ public class ChatSession {
     @Column(nullable = false)
     private boolean favorite = false;
 
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
-    private Instant createdAt;
-
     @LastModifiedDate
     @Column(nullable = false)
     private Instant updatedAt;
@@ -39,7 +30,6 @@ public class ChatSession {
     @OrderBy("createdAt ASC")
     private List<ChatMessage> messages = new ArrayList<>();
 
-    @PrePersist
     public void onCreate() {
         if (this.title == null || this.title.isBlank()) {
             this.title = "New Session";
@@ -47,7 +37,6 @@ public class ChatSession {
     }
 
     // getters and setters
-    public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
     public User getUser() { return user; }
@@ -58,9 +47,6 @@ public class ChatSession {
 
     public boolean isFavorite() { return favorite; }
     public void setFavorite(boolean favorite) { this.favorite = favorite; }
-
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 
     public Instant getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }

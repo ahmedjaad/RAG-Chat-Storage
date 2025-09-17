@@ -19,7 +19,7 @@ public class UserService {
     }
 
     public User ensureUser(String userId) {
-        return userRepository.findById(userId)
+        return userRepository.findByUserId(userId)
                 .orElseGet(() -> {
                     User u = new User();
                     u.setUserId(userId);

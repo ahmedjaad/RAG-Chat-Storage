@@ -13,15 +13,10 @@ import java.time.Instant;
 @Entity
 @Table(name = "users")
 @EntityListeners(AuditingEntityListener.class)
-public class User {
+public class User extends BaseEntity {
 
-    @Id
-    @Column(name = "user_id", nullable = false, length = 128)
+    @Column(name = "user_id", nullable = false, length = 128, unique = true)
     private String userId;
-
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
-    private Instant createdAt;
 
     @LastModifiedDate
     @Column(nullable = false)
@@ -29,9 +24,6 @@ public class User {
 
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
-
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 
     public Instant getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }

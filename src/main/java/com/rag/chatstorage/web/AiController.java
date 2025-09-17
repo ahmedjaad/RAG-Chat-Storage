@@ -1,5 +1,6 @@
 package com.rag.chatstorage.web;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.embedding.EmbeddingModel;
@@ -22,6 +23,7 @@ import java.util.Map;
 @RequestMapping("/api/v1/ai")
 @Validated
 @Tag(name = "AI", description = "AI inference and embeddings via Spring AI/OpenAI")
+@Hidden
 public class AiController {
 
     private final ChatClient chatClient;

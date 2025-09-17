@@ -4,6 +4,7 @@ import com.rag.chatstorage.service.ChatSessionService;
 import com.rag.chatstorage.web.dto.SessionDtos.MessageResponse;
 import com.rag.chatstorage.web.dto.SessionDtos.PagedMessages;
 import com.rag.chatstorage.web.dto.SessionDtos.SessionResponse;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/ui")
+@Hidden
 public class UiController {
 
     private final ChatSessionService service;

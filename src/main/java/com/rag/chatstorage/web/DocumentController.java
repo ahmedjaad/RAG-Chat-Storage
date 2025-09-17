@@ -1,6 +1,7 @@
 package com.rag.chatstorage.web;
 
 import com.rag.chatstorage.service.DocumentService;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -11,6 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/docs")
 @Validated
+@Hidden
 public class DocumentController {
 
     private final DocumentService service;

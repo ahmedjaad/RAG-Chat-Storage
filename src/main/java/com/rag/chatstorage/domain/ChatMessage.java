@@ -8,15 +8,12 @@ import java.time.Instant;
 @Entity
 @Table(name = "chat_messages")
 @EntityListeners(AuditingEntityListener.class)
-public class ChatMessage {
+public class ChatMessage extends BaseEntity {
 
     public enum Sender {
         USER, ASSISTANT, SYSTEM
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "session_id", nullable = false)
@@ -34,13 +31,6 @@ public class ChatMessage {
     @Column
     private String context; // optional JSON or text context
 
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
-    private Instant createdAt;
-
-    // getters and setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
 
     public ChatSession getSession() { return session; }
     public void setSession(ChatSession session) { this.session = session; }
@@ -54,6 +44,4 @@ public class ChatMessage {
     public String getContext() { return context; }
     public void setContext(String context) { this.context = context; }
 
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 }

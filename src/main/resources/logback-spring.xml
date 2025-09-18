@@ -13,9 +13,23 @@
                 <loggerName/>
                 <threadName/>
                 <mdc/> <!-- includes requestId -->
-                <context/> 
+                <context/>
                 <message/>
                 <arguments/>
+                <stackTrace/>
+            </providers>
+        </encoder>
+    </appender>
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>rag-logstash:5050</destination>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp/>
+                <logLevel/>
+                <loggerName/>
+                <threadName/>
+                <mdc/>
+                <message/>
                 <stackTrace/>
             </providers>
         </encoder>
@@ -33,5 +47,6 @@
 
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
+        <appender-ref ref="LOGSTASH"/>
     </root>
 </configuration>

@@ -2,6 +2,7 @@ package com.rag.chatstorage.service;
 
 import com.rag.chatstorage.domain.User;
 import com.rag.chatstorage.repository.UserRepository;
+import com.rag.chatstorage.service.impl.SimpleUserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -20,7 +21,7 @@ public class UserServiceTest {
     @BeforeEach
     void setUp() {
         userRepository = mock(UserRepository.class);
-        userService = new UserService(userRepository);
+        userService = new SimpleUserService(userRepository);
     }
 
     @Test

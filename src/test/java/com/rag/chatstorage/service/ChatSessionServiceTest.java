@@ -5,6 +5,7 @@ import com.rag.chatstorage.domain.ChatSession;
 import com.rag.chatstorage.domain.User;
 import com.rag.chatstorage.repository.ChatMessageRepository;
 import com.rag.chatstorage.repository.ChatSessionRepository;
+import com.rag.chatstorage.service.impl.SimpleChatSessionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
@@ -31,7 +32,7 @@ public class ChatSessionServiceTest {
         sessionRepository = mock(ChatSessionRepository.class);
         messageRepository = mock(ChatMessageRepository.class);
         userService = mock(UserService.class);
-        service = new ChatSessionService(sessionRepository, messageRepository, userService);
+        service = new SimpleChatSessionService(sessionRepository, messageRepository, userService);
     }
 
     @Test

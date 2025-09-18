@@ -1,9 +1,9 @@
 package com.rag.chatstorage.service;
 
+import com.rag.chatstorage.service.impl.SimpleAiService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -16,7 +16,7 @@ public class AiServiceTest {
     @BeforeEach
     void setUp() {
         chatClient = mock(ChatClient.class, RETURNS_DEEP_STUBS);
-        aiService = new AiService(chatClient);
+        aiService = new SimpleAiService(chatClient);
     }
 
     @Test

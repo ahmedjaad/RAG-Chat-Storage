@@ -209,15 +209,6 @@ Examples:
 - Ollama: SPRING_PROFILES_ACTIVE=ollama OLLAMA_BASE_URL=http://localhost:11434 ./mvnw spring-boot:run
 - OpenAI-compatible: SPRING_PROFILES_ACTIVE=openai-compatible PROVIDER_API_KEY=... PROVIDER_BASE_URL=... ./mvnw spring-boot:run
 
-### Endpoints
-- POST /api/v1/ai/infer
-  - Body: { "prompt": "Hello", "system": "You are a helpful assistant." }
-  - Response: { "content": "...", "metadata": { ... } }
-- POST /api/v1/ai/embeddings
-  - Body: { "inputs": ["text 1", "text 2"] }
-  - Response: { "data": [{"vector": [..]}, ...], "dimensions": 1536 }
-
-Note: These endpoints require the API key header like other APIs (X-API-KEY).
 
 ## Centralized Logging (ELK)
 
@@ -237,14 +228,26 @@ Authentication:
 - If your Elasticsearch is secured, configure credentials in `.env`:
     * `ELASTIC_USER`
     * `ELASTIC_PASSWORD`
+### Add Kibana Data View
 
-With centralized logging, you can:
-- Search logs by `requestId` across distributed services.
-- Monitor error rates, latency, and traffic patterns in Kibana dashboards.
-- Set up alerts based on log events.
+Once all services are running and Logstash has started forwarding logs to Elasticsearch (index name is defined in `logstash/pipeline/logstash.conf`), follow these steps to explore the logs in Kibana:
 
-## Contributing
+1. Open Kibana in your browser:
+   [http://localhost:5601](http://localhost:5601)
 
-Please see CONTRIBUTING.md for guidelines.
+2. Go to **Analytics → Discover**.
 
-Important: after each prompt that asks you to make changes, commit the changes when all is well (build passes and tests are green). Do not push; maintainers/CI will handle pushing as appropriate.
+3. If prompted to create a data view:
+
+    - Click **Create data view**.
+    - Enter a name, e.g. `RAG-backend-logs`.
+    - For the index pattern, use the value configured in `logstash.conf` (default: `rag-app-logs-*`).
+    - Select `@timestamp` as the time field.
+    - Click **Save data view**.
+
+4. You can now search and filter logs by fields such as `requestId`, `level`, `logger`, etc. across distributed services.
+
+5. With centralized logging, you can:
+   - Search logs by `requestId` across distributed services.
+   - Monitor error rates, latency, and traffic patterns in Kibana dashboards.
+   - Set up alerts based on log events.

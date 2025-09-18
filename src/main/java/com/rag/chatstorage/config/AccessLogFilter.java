@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -22,7 +21,7 @@ import java.io.IOException;
 @Order(Ordered.LOWEST_PRECEDENCE)
 public class AccessLogFilter extends OncePerRequestFilter {
 
-    private static final Logger log = LoggerFactory.getLogger("ACCESS");
+    private static final Logger LOGSTASH = LoggerFactory.getLogger("LOGSTASH");
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -39,13 +38,12 @@ public class AccessLogFilter extends OncePerRequestFilter {
                 uri += "?" + query;
             }
             int status = response.getStatus();
-            String requestId = MDC.get(RequestIdFilter.MDC_KEY);
             String ip = request.getHeader("X-Forwarded-For");
             if (ip == null || ip.isBlank()) ip = request.getRemoteAddr();
             String ua = request.getHeader("User-Agent");
 
             // Log as a single message; logstash encoder will add MDC and standard fields.
-            log.info("access log: method={}, path={}, status={}, durationMs={}, ip={}, ua={}",
+            LOGSTASH.info("access log: method={}, path={}, status={}, durationMs={}, ip={}, ua={}",
                     method, uri, status, duration, ip, ua);
         }
     }

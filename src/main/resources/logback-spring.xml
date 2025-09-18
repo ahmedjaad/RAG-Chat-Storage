@@ -3,7 +3,8 @@
 
     <property name="LOG_LEVEL_PATTERN" value="%5p"/>
 
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>logstash:5050</destination>
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
             <providers>
                 <timestamp>
@@ -40,13 +41,7 @@
     <logger name="org.hibernate" level="WARN"/>
     <logger name="org.springframework.web" level="INFO"/>
 
-    <!-- Access logs: use same JSON appender; logger name ACCESS -->
-    <logger name="ACCESS" level="INFO" additivity="false">
-        <appender-ref ref="STDOUT"/>
-    </logger>
-
     <root level="INFO">
-        <appender-ref ref="STDOUT"/>
         <appender-ref ref="LOGSTASH"/>
     </root>
 </configuration>

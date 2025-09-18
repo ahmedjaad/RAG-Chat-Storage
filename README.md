@@ -43,7 +43,7 @@ Key variables:
 docker compose up --build
 ```
 - Backend: http://localhost:8080 (container: rag-backend)
-- UI: http://localhost:8081 (container: rag-ui)
+- UI: http://localhost:8080/ui (container: rag-ui)
 - Adminer: http://localhost:8082 (container: rag-adminer)
   - Adminer connection to MySQL:
     - System: MySQL
@@ -101,7 +101,7 @@ Base path: `/api/v1`
 
 ## UI
 
-A separate Spring Boot UI (ui-app) is available at http://localhost:8081/ui with a ChatGPT-like dark theme and responsive layout:
+The UI is available at http://localhost:8080/ui with a ChatGPT-like dark theme and responsive layout:
 - Left sidebar lists sessions with small, friendly controls per session (favorite ⭐/☆, inline rename ✎, delete 🗑), and a filter toggle (All / Favorites)
 - Main chat area shows messages with alternating bubbles
 - Sticky composer at the bottom to send USER messages quickly

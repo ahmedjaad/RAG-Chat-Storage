@@ -19,7 +19,7 @@ import java.io.IOException;
  */
 @Component
 @Order(Ordered.LOWEST_PRECEDENCE)
-public class AccessLogFilter extends OncePerRequestFilter {
+public class LogStashFilter extends OncePerRequestFilter {
 
     private static final Logger LOGSTASH = LoggerFactory.getLogger("LOGSTASH");
 

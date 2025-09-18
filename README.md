@@ -53,14 +53,18 @@ docker compose up --build
   - If you see "Connection refused" in Adminer:
     - Wait a few seconds; MySQL has a healthcheck and Adminer will start after it’s healthy.
     - Ensure you connect to Server: mysql (service) or rag-mysql (container), not localhost.
-    - Check that host port 3306 isn’t already used by a local MySQL. If in use, edit docker-compose.yml and change the mapping to "3307:3306", then restart.
+    - Check that host port 3306 isn’t already used by a local MySQL. If in use, you can stop the locally running instance or edit docker-compose.yml and change the mapping to "3307:3306", then restart.
 - MySQL (container name: rag-mysql) is available on host port 3306 by default.
+- ELK stack (Logstash, Elasticsearch, Kibana) is included for centralized logging:
+  - Elasticsearch: http://localhost:9200
+  - Kibana: http://localhost:5601
+  - Logstash reads logs from the backend container and forwards to Elasticsearch.
 - Health: http://localhost:8080/actuator/health (details enabled)
   - Liveness: http://localhost:8080/actuator/health/liveness
   - Readiness: http://localhost:8080/actuator/health/readiness
 - Swagger UI: http://localhost:8080/swagger-ui/index.html
 - Docs shortcut: http://localhost:8080/docs
-- UI (separate Spring Boot): http://localhost:8081/ui (defaults to userId=demo if you hit /ui)
+- UI: http://localhost:8080/ui (defaults to userId=demo if you hit /ui)
 - Friendly UI error pages for not found (404) and general errors
 
 Add header `X-API-KEY: <your api key>` to API requests. You can configure a single key via `API_KEY` or multiple keys via `API_KEYS` (comma-separated).

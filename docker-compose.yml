@@ -41,6 +41,7 @@ services:
     depends_on:
       - mysql
       - redis
+      - logstash
     env_file:
       - .env
     environment:
@@ -57,8 +58,40 @@ services:
     ports:
       - "11434:11434"
     volumes:
-      - ollama_data:/root/.ollama  # persist your llama3 model
+      - ollama_data:/root/.ollama
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    container_name: rag-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.1
+    container_name: rag-logstash
+    depends_on:
+      - elasticsearch
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+    ports:
+      - "5050:5050"  # TCP input for Spring Boot JSON logs
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.1
+    container_name: rag-kibana
+    depends_on:
+      - elasticsearch
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: "http://rag-elasticsearch:9200"
 
 volumes:
   mysql_data:
   ollama_data:
+  es_data:

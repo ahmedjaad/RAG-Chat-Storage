@@ -150,12 +150,7 @@ You can activate different LLMs by setting the corresponding Spring profile. For
 Additionally, you can run a locally running LLM container using the ollama docker compose profile. This must be used in conjunction with the corresponding Spring application profile (e.g., ollama).
 
 To use the elk profile for activating the Elastic Stack for centralized logging, activate the spring profile `elk`.
-</llm-patch>
 
-<llm-patch path="README.md" matcher="BeforeAfter">
-Adding docker compose profiles documentation
-<!--Separator-->
-Before:
 
 Supported profiles:
 - openai (default)
@@ -169,19 +164,6 @@ Select a provider at runtime:
 - Docker/K8s: set SPRING_PROFILES_ACTIVE in the container/pod env
 
 Readiness health includes the AI provider. If the provider is misconfigured/unreachable, readiness is DOWN.
-
-## Production hardening checklist
-
-- Run behind TLS (terminate HTTPS at your ingress or gateway).
-- Rotate API keys regularly; prefer multiple keys via API_KEYS.
-- Adjust rate limiting (rate-limit.requests-per-minute, burst) to your traffic.
-- Set strict CORS allowed-origins for your frontend domains only.
-- Set request size limits (MAX_FILE_SIZE, MAX_REQUEST_SIZE, request.max-bytes) per your needs.
-- Configure persistent DB and Liquibase changelog; disable hibernate DDL (already disabled).
-- Set provider env vars if using AI endpoints; readiness group includes ai.
-- Observe resilience: retries and circuit breaker are configured for AI calls.
-- Run the container as non-root (Dockerfile already does); set resource limits and replicas.
-- Expose actuator endpoints carefully (currently only health, info).
 
 ## Development
 

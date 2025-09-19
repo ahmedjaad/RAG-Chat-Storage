@@ -132,7 +132,7 @@ curl -i http://localhost:8080/api/v1/sessions?userId=demo \\
 
 You will see one access log entry with that requestId.
 
-## Profiles
+## Profiles (Spring Profiles and Docker Compose Profiles)
 
 - default: production-like settings reading environment variables.
 - dev: convenient defaults for local development (enable H2 if configured, verbose logging). Run with:
@@ -141,6 +141,21 @@ You will see one access log entry with that requestId.
 ### AI Provider profiles (runtime switchable)
 
 The service can run against multiple LLM providers by selecting a Spring profile at runtime. If no profile is set, OpenAI is used by default.
+
+You can activate different LLMs by setting the corresponding Spring profile. For example:
+  - openai: uses OpenAI's LLM
+  - ollama: uses OLLAMA's LLM (requires running the ollama docker compose profile)
+  - anthropic: uses Anthropic's LLM
+
+Additionally, you can run a locally running LLM container using the ollama docker compose profile. This must be used in conjunction with the corresponding Spring application profile (e.g., ollama).
+
+To use the elk profile for activating the Elastic Stack for centralized logging, activate the spring profile `elk`.
+</llm-patch>
+
+<llm-patch path="README.md" matcher="BeforeAfter">
+Adding docker compose profiles documentation
+<!--Separator-->
+Before:
 
 Supported profiles:
 - openai (default)

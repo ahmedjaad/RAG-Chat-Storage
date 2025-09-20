@@ -1,11 +1,14 @@
 package com.rag.chatstorage.ratelimit;
 
+import com.rag.chatstorage.ratelimit.RateLimitProperties.Policy;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.BucketConfiguration;
 import io.github.bucket4j.ConsumptionProbe;
+import io.github.bucket4j.Refill;
 import io.github.bucket4j.distributed.BucketProxy;
 import io.github.bucket4j.distributed.proxy.ProxyManager;
+import io.github.bucket4j.local.LocalBucketBuilder;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -53,13 +56,13 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private String apiKeyHeader;
 
     /**
-         * Creates a new RateLimitFilter.
-         *
-         * @param props rate limit configuration properties
-         * @param proxyManagerProvider optional provider for the distributed Bucket4j ProxyManager (may be absent to enable local fallback)
-         * @param meterRegistry Micrometer registry used to record allow/block metrics
-         */
-        public RateLimitFilter(RateLimitProperties props, ObjectProvider<ProxyManager<byte[]>> proxyManagerProvider, MeterRegistry meterRegistry) {
+     * Creates a new RateLimitFilter.
+     *
+     * @param props rate limit configuration properties
+     * @param proxyManagerProvider optional provider for the distributed Bucket4j ProxyManager (may be absent to enable local fallback)
+     * @param meterRegistry Micrometer registry used to record allow/block metrics
+     */
+    public RateLimitFilter(RateLimitProperties props, ObjectProvider<ProxyManager<byte[]>> proxyManagerProvider, MeterRegistry meterRegistry) {
         this.props = props;
         this.proxyManager = proxyManagerProvider.getIfAvailable();
         this.meterRegistry = meterRegistry;
@@ -88,7 +91,13 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         String subject = resolveSubject(request);
-        String tier = props.getApiKeys().getOrDefault(getApiKey(request), props.getDefaultTier());
+        String apiKey = getApiKey(request);
+        String tier;
+        if (StringUtils.hasText(apiKey) && props.getApiKeys().containsKey(apiKey)) {
+            tier = props.getApiKeys().get(apiKey);
+        } else {
+            tier = props.getDefaultTier();
+        }
 
         RateLimitProperties.Policy policy = selectPolicy(method, path, tier);
         if (policy == null) {
@@ -107,28 +116,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
                 probe = bucket.tryConsumeAndReturnRemaining(cost);
             } catch (Exception ex) {
                 // Fallback to local in-memory bucket with stricter limits
-                String localKey = new String(key, StandardCharsets.UTF_8);
-                Bucket local = localBuckets.computeIfAbsent(localKey, k -> {
-                    io.github.bucket4j.local.LocalBucketBuilder lb = Bucket.builder();
-                    for (Bandwidth bw : adjustForFallback(policy.getBandwidths())) {
-                        lb.addLimit(bw);
-                    }
-                    return lb.build();
-                });
-                probe = local.tryConsumeAndReturnRemaining(cost);
+                probe = consumptionProbe(policy, cost, key);
                 log.warn("Redis unavailable, using local fallback rate limiter: {}", ex.toString());
             }
         } else {
             // No proxy manager configured; use local bucket without exceptions
-            String localKey = new String(key, StandardCharsets.UTF_8);
-            Bucket local = localBuckets.computeIfAbsent(localKey, k -> {
-                io.github.bucket4j.local.LocalBucketBuilder lb = Bucket.builder();
-                for (Bandwidth bw : adjustForFallback(policy.getBandwidths())) {
-                    lb.addLimit(bw);
-                }
-                return lb.build();
-            });
-            probe = local.tryConsumeAndReturnRemaining(cost);
+            probe = consumptionProbe(policy, cost, key);
         }
         addHeaders(response, policy, probe, cost);
         recordMetrics(method, path, tier, probe.isConsumed());
@@ -139,22 +132,36 @@ public class RateLimitFilter extends OncePerRequestFilter {
             response.setContentType("application/problem+json");
             String instance = request.getRequestURI();
             String body = "{" +
-                    "\"type\":\"about:blank\"," +
-                    "\"title\":\"Too Many Requests\"," +
-                    "\"status\":429," +
-                    "\"detail\":\"Rate limit exceeded. Please retry later.\"," +
-                    "\"instance\":\"" + instance + "\"," +
-                    "\"limit\":" + mostRestrictiveLimit(policy) + "," +
-                    "\"remaining\":" + probe.getRemainingTokens() + "," +
-                    "\"reset\":" + retryAfter + "," +
-                    "\"subject\":\"" + sanitize(subject) + "\"," +
-                    "\"tier\":\"" + sanitize(tier) + "\"" +
-                    "}";
+                          "\"type\":\"about:blank\"," +
+                          "\"title\":\"Too Many Requests\"," +
+                          "\"status\":429," +
+                          "\"detail\":\"Rate limit exceeded. Please retry later.\"," +
+                          "\"instance\":\"" + instance + "\"," +
+                          "\"limit\":" + mostRestrictiveLimit(policy) + "," +
+                          "\"remaining\":" + probe.getRemainingTokens() + "," +
+                          "\"reset\":" + retryAfter + "," +
+                          "\"subject\":\"" + sanitize(subject) + "\"," +
+                          "\"tier\":\"" + sanitize(tier) + "\"" +
+                          "}";
             response.getWriter().write(body);
             log.warn("rate_limit_blocked subject={} tier={} method={} path={} remaining={} retryAfter={}s", subject, tier, method, path, probe.getRemainingTokens(), retryAfter);
             return;
         }
         filterChain.doFilter(request, response);
+    }
+
+    private ConsumptionProbe consumptionProbe(Policy policy, int cost, byte[] key) {
+        ConsumptionProbe probe;
+        String localKey = new String(key, StandardCharsets.UTF_8);
+        Bucket local = localBuckets.computeIfAbsent(localKey, k -> {
+            LocalBucketBuilder lb = Bucket.builder();
+            for (Bandwidth bw : adjustForFallback(policy.getBandwidths())) {
+                lb.addLimit(bw);
+            }
+            return lb.build();
+        });
+        probe = local.tryConsumeAndReturnRemaining(cost);
+        return probe;
     }
 
     /*
@@ -178,7 +185,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         response.setHeader("RateLimit-Reset", String.valueOf(reset));
         // Legacy headers for short window (assume first bandwidth is short window)
         if (!policy.getBandwidths().isEmpty()) {
-            RateLimitProperties.BandwidthDef first = policy.getBandwidths().get(0);
+            RateLimitProperties.BandwidthDef first = policy.getBandwidths().getFirst();
             response.setHeader("X-RateLimit-Limit", String.valueOf(first.getLimit()));
             response.setHeader("X-RateLimit-Remaining", String.valueOf(Math.max(0, probe.getRemainingTokens())));
         }
@@ -212,24 +219,30 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     /*
-     * Selects the first matching policy for the given method/path and tier; remembers a generic fallback.
+     * Selects the first matching policy for the given method/path and tier; uses defaultPolicy as fallback.
      */
     private RateLimitProperties.Policy selectPolicy(String method, String path, String tier) {
-        RateLimitProperties.Policy fallback = null;
+        // First, check if any specific policy matches (non-default tier policies)
         for (RateLimitProperties.Policy p : props.getPolicies()) {
             if (p.getTier() != null && !p.getTier().equalsIgnoreCase(tier)) continue;
             if (matches(p, method, path)) return p;
-            if (p.getTier() == null && matches(p, method, path)) fallback = p;
         }
-        return fallback;
+
+        // If no specific policy matches, use the defaultPolicy as fallback
+        return props.getDefaultPolicy();
     }
+
     /*
      * Checks if a request method and path match the policy's method/path patterns.
+     * Returns false if match criteria are missing or incomplete.
      */
     private boolean matches(RateLimitProperties.Policy p, String method, String path) {
-        if (p.getMatch() == null) return true;
-        boolean methodOk = p.getMatch().getMethods() == null || p.getMatch().getMethods().isEmpty() || p.getMatch().getMethods().stream().anyMatch(m -> m.equalsIgnoreCase(method));
-        boolean pathOk = p.getMatch().getPaths() == null || p.getMatch().getPaths().isEmpty() || p.getMatch().getPaths().stream().anyMatch(ptn -> matcher.match(ptn, path));
+        if (p.getMatch() == null) return false;
+        if (p.getMatch().getMethods() == null || p.getMatch().getMethods().isEmpty()) return false;
+        if (p.getMatch().getPaths() == null || p.getMatch().getPaths().isEmpty()) return false;
+
+        boolean methodOk = p.getMatch().getMethods().stream().anyMatch(m -> m.equalsIgnoreCase(method));
+        boolean pathOk = p.getMatch().getPaths().stream().anyMatch(ptn -> matcher.match(ptn, path));
         return methodOk && pathOk;
     }
 
@@ -263,9 +276,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
         List<Bandwidth> list = new ArrayList<>();
         for (RateLimitProperties.BandwidthDef d : defs) {
             long limit = Math.max(1, (long) Math.floor(d.getLimit() * (proxyAvailable() ? 1.0 : factor)));
-            io.github.bucket4j.Refill refill = "interval".equalsIgnoreCase(d.getRefillStrategy())
-                    ? io.github.bucket4j.Refill.intervally(limit, Duration.ofSeconds(d.getWindowSeconds()))
-                    : io.github.bucket4j.Refill.greedy(limit, Duration.ofSeconds(d.getWindowSeconds()));
+            Refill refill = "interval".equalsIgnoreCase(d.getRefillStrategy())
+                    ? Refill.intervally(limit, Duration.ofSeconds(d.getWindowSeconds()))
+                    : Refill.greedy(limit, Duration.ofSeconds(d.getWindowSeconds()));
             list.add(Bandwidth.classic(limit, refill));
         }
         return list;

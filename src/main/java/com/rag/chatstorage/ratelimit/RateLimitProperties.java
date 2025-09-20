@@ -17,7 +17,9 @@ public class RateLimitProperties {
     private boolean enabled = true;
     private boolean trustProxies = false;
     private String keyPrefix = "ratelimit:";
+    private boolean redisEnabled;
     private String defaultTier = "default";
+    private Policy defaultPolicy;
 
     // Redis
     private String host = "localhost";
@@ -35,6 +37,22 @@ public class RateLimitProperties {
 
     // Fallback local limiter tightness multiplier (smaller is stricter)
     private double fallbackFactor = 0.5;
+
+    public Policy getDefaultPolicy() {
+        return defaultPolicy;
+    }
+
+    public void setDefaultPolicy(Policy defaultPolicy) {
+        this.defaultPolicy = defaultPolicy;
+    }
+
+    public boolean getRedisEnabled() {
+        return redisEnabled;
+    }
+
+    public void setRedisEnabled(boolean redisEnabled) {
+        this.redisEnabled = redisEnabled;
+    }
 
     /**
      * Declarative policy describing which requests are matched and the limits applied.
@@ -60,8 +78,8 @@ public class RateLimitProperties {
      * Match criteria used to select a policy for a given request (methods and paths).
      */
     public static class Match {
-        private List<String> methods = Arrays.asList("GET","POST","PATCH","DELETE");
-        private List<String> paths = Arrays.asList("/api/**");
+        private List<String> methods;
+        private List<String> paths;
         public List<String> getMethods() { return methods; }
         public void setMethods(List<String> methods) { this.methods = methods; }
         public List<String> getPaths() { return paths; }

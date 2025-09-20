@@ -156,7 +156,7 @@ ratelimit:
         - path: "/api/v1/sessions"
           method: GET
           tokens: 1
-        - path: "/api/v1/sessions"
+        - path: "/api/v1/sessions/{id}/title"
           method: PATCH
           tokens: 2
 

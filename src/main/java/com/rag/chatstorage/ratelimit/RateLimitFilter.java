@@ -269,13 +269,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     /*
-     * Adjusts bandwidth limits when using local fallback, making them stricter based on fallbackFactor.
+     * Builds bandwidth limits from configuration definitions.
      */
     private List<Bandwidth> adjustForFallback(List<RateLimitProperties.BandwidthDef> defs) {
-        double factor = props.getFallbackFactor() > 0 && props.getFallbackFactor() <= 1 ? props.getFallbackFactor() : 0.5;
         List<Bandwidth> list = new ArrayList<>();
         for (RateLimitProperties.BandwidthDef d : defs) {
-            long limit = Math.max(1, (long) Math.floor(d.getLimit() * (proxyAvailable() ? 1.0 : factor)));
+            long limit = d.getLimit(); // Use full configured limit always
             Refill refill = "interval".equalsIgnoreCase(d.getRefillStrategy())
                     ? Refill.intervally(limit, Duration.ofSeconds(d.getWindowSeconds()))
                     : Refill.greedy(limit, Duration.ofSeconds(d.getWindowSeconds()));

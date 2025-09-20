@@ -93,8 +93,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String subject = resolveSubject(request);
         String apiKey = getApiKey(request);
         String tier;
-        if (StringUtils.hasText(apiKey) && props.getApiKeys().containsKey(apiKey)) {
-            tier = props.getApiKeys().get(apiKey);
+        if (StringUtils.hasText(apiKey) && props.getApiKeyTiers().containsKey(apiKey)) {
+            tier = props.getApiKeyTiers().get(apiKey);
         } else {
             tier = props.getDefaultTier();
         }

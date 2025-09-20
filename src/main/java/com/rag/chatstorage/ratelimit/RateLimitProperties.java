@@ -31,7 +31,7 @@ public class RateLimitProperties {
 
     private List<String> whitelistPaths = Arrays.asList("/", "/docs", "/swagger-ui/**", "/actuator/health/**", "/ui/**", "/static/**");
 
-    private Map<String, String> apiKeys = new HashMap<>();
+    private Map<String, String> apiKeyTiers = new HashMap<>();
 
     private List<Policy> policies = new ArrayList<>();
 
@@ -143,8 +143,8 @@ public class RateLimitProperties {
      */
     public List<String> getWhitelistPaths() { return whitelistPaths; }
     public void setWhitelistPaths(List<String> whitelistPaths) { this.whitelistPaths = whitelistPaths; }
-    public Map<String, String> getApiKeys() { return apiKeys; }
-    public void setApiKeys(Map<String, String> apiKeys) { this.apiKeys = apiKeys; }
+    public Map<String, String> getApiKeyTiers() { return apiKeyTiers; }
+    public void setApiKeyTiers(Map<String, String> apiKeyTiers) { this.apiKeyTiers = apiKeyTiers; }
     public List<Policy> getPolicies() { return policies; }
     public void setPolicies(List<Policy> policies) { this.policies = policies; }
     public double getFallbackFactor() { return fallbackFactor; }

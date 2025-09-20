@@ -114,7 +114,7 @@ ratelimit:
     - "/ui/**"
     - "/favicon.ico"
     - "/static/**"
-  apiKeys:
+  apiKeyTiers:
     # Map API keys to tiers; example defaults
 #    "secure-random-string": premium
     "key_demo": default

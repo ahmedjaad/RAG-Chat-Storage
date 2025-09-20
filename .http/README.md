@@ -4,7 +4,7 @@ This directory contains IntelliJ HTTP Client request files for exercising the AP
 
 Environment placeholders used in files:
 - {{HOST}}: base URL (default you can use http://localhost:8080)
-- {{API_KEY}}: your API key value for X-API-KEY header
+- {{API_KEYS}}: your comma-separated API keys values for X-API-KEY header
 - {{SESSION_ID}}: a session ID to target message-related endpoints
 
 Usage (IntelliJ IDEA):

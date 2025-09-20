@@ -81,8 +81,7 @@ resilience4j:
 security:
   api-key:
     header: X-API-KEY
-    value: ${API_KEY:changeme}
-    # Optional: comma-separated list of valid API keys
+    # Comma-separated list of valid API keys
     values: ${API_KEYS:}
 rate-limit:
   requests-per-minute: ${REQUESTS_PER_MINUTE:60}
@@ -116,8 +115,8 @@ ratelimit:
     - "/static/**"
   apiKeyTiers:
     # Map API keys to tiers; example defaults
-#    "secure-random-string": premium
-    "key_demo": default
+    "secure-random-string": premium
+    "demo-key": default
   defaultPolicy:
       id: default-api
       match:

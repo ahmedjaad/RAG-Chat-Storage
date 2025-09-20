@@ -22,11 +22,8 @@ public class SecurityConfig {
     @Value("${security.api-key.header:X-API-KEY}")
     private String apiKeyHeader;
 
-    @Value("${security.api-key.value:changeme}")
-    private String apiKeyValue;
-
     @Value("${security.api-key.values:}")
-    private String apiKeyValues; // optional comma-separated list
+    private String apiKeyValues;
 
     @Value("${rate-limit.requests-per-minute:60}")
     private int rpm;
@@ -62,12 +59,8 @@ public class SecurityConfig {
                 String key = request.getHeader(apiKeyHeader);
                 boolean authorized = false;
                 if (StringUtils.hasText(key)) {
-                    // Check single value
-                    if (StringUtils.hasText(apiKeyValue) && apiKeyValue.equals(key)) {
-                        authorized = true;
-                    }
                     // Check list values
-                    if (!authorized && StringUtils.hasText(apiKeyValues)) {
+                    if (StringUtils.hasText(apiKeyValues)) {
                         for (String v : apiKeyValues.split(",")) {
                             if (key.equals(v.trim()) && !v.trim().isEmpty()) { authorized = true; break; }
                         }
@@ -77,7 +70,7 @@ public class SecurityConfig {
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());
                     response.setContentType("application/json");
                     // Provide a helpful message indicating the expected header name
-                    String msg = String.format("{\"error\":\"Unauthorized\",\"hint\":\"Send the API key in header %s matching server configuration. Set API_KEY in your .env.\"}", apiKeyHeader);
+                    String msg = String.format("{\"error\":\"Unauthorized\",\"hint\":\"Send the API key in header %s matching server configuration. Set API_KEYS in your .env.\"}", apiKeyHeader);
                     response.getWriter().write(msg);
                     // Optionally include a WWW-Authenticate hint (non-standard for API key, but helps tooling)
                     response.setHeader("WWW-Authenticate", "ApiKey realm=\"api\", header=\"" + apiKeyHeader + "\"");

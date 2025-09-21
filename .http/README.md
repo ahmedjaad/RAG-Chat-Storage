@@ -14,7 +14,7 @@ Usage (IntelliJ IDEA):
 Quick inline usage example:
 - Set at top of file or in environment: 
   @HOST = http://localhost:8080
-  @API_KEY = replace-with-a-secure-random-string
+  @API_KEY = replace-with-a-key
 
 Files:
 - health.http – root, actuator health/liveness/readiness, docs
